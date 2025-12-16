@@ -48,3 +48,162 @@ Join our community of developers creating universal apps.
 
 - [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
 - [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+
+📱 Simple Receipt Generator (WhatsApp-Friendly)
+Overview
+
+A mobile-first receipt generator designed for Nigerian petty traders, shop owners, online vendors, and freelancers.
+The app allows users to generate professional receipts and share them instantly via WhatsApp.
+
+🎯 Product Goals
+
+Generate receipts in under 10 seconds
+
+Work offline
+
+Be extremely simple to use
+
+Be WhatsApp-first
+
+Avoid accounting complexity
+
+🧩 Target Users
+
+Petty traders
+
+POS agents
+
+Online sellers
+
+Freelancers
+
+Small shop owners
+
+🛠️ Tech Stack
+Frontend
+
+React Native
+
+Expo (managed)
+
+TypeScript
+
+React Navigation
+
+Storage
+
+SQLite (local only for Phase 1)
+
+Utilities
+
+Image generation via view capture
+
+File system for saving receipts
+
+Native share for WhatsApp
+
+🚀 Development Phases
+Phase 1 — MVP (Current)
+
+Scope strictly limited to:
+
+Receipt creation
+
+Local business profile
+
+Image-based receipt generation
+
+WhatsApp sharing
+
+Local receipt history
+
+Offline-first
+
+No backend. No login. No payments.
+
+Phase 2 — Business Branding
+
+Enhanced business profile
+
+Logo & branding
+
+Receipt customization
+
+Watermark removal (paid)
+
+Phase 3 — Accounts & Backend
+
+ASP.NET Core Web API
+
+User authentication
+
+Cloud sync
+
+Subscription management
+
+Analytics
+
+🖥️ App Screens (Phase 1)
+
+Home / Receipt List
+
+Create Receipt
+
+Receipt Preview
+
+Business Profile
+
+🧱 Folder Structure
+src/
+ ├── components/
+ ├── screens/
+ ├── navigation/
+ ├── storage/
+ ├── models/
+ ├── utils/
+
+🔐 Data Handling
+
+All data stored locally in SQLite
+
+No cloud sync in Phase 1
+
+Privacy-first approach
+
+💰 Monetization Strategy
+
+Freemium model
+
+Free basic receipts with watermark
+
+Paid tier for branding & advanced features
+
+📌 Development Principles
+
+Simplicity over features
+
+Speed over perfection
+
+Validate with real users early
+
+Add backend only when necessary
+
+📍 Status
+
+Phase 1 — In Development
+
+3. What This Gives You
+
+With this:
+
+Cursor behaves like a senior engineer
+
+You avoid feature creep
+
+You have clear documentation
+
+You can onboard contributors later
+
+You align perfectly with a future ASP.NET backend
+
+

@@ -1,98 +1,250 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
-
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { useRouter } from 'expo-router';
+import { IconSymbol } from '@/components/ui/icon-symbol';
+import { Colors } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { initDb } from '@/lib/database';
+import { getAllReceipts, deleteReceipt } from '@/lib/storage';
+import type { Receipt } from '@/models/types';
+import { formatCurrency, formatDate } from '@/utils/receipt';
 
 export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+  const router = useRouter();
+  const colorScheme = useColorScheme();
+  const [receipts, setReceipts] = useState<Receipt[]>([]);
+  const [loading, setLoading] = useState(true);
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+  const loadReceipts = async () => {
+    try {
+      // Ensure database schema exists before querying
+      await initDb();
+      const allReceipts = await getAllReceipts();
+      setReceipts(allReceipts);
+    } catch (error) {
+      console.error('Error loading receipts:', error);
+      Alert.alert('Error', 'Failed to load receipts');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadReceipts();
+  }, []);
+
+  const handleCreateReceipt = () => {
+    router.push('/create-receipt');
+  };
+
+  const handleOpenSettings = () => {
+    router.push('/business-profile');
+  };
+
+  const handleReceiptPress = (receiptId: number) => {
+    router.push(`/receipt-preview?id=${receiptId}`);
+  };
+
+  const handleDeleteReceipt = async (receiptId: number, event: any) => {
+    event?.stopPropagation();
+    Alert.alert(
+      'Delete Receipt',
+      'Are you sure you want to delete this receipt?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deleteReceipt(receiptId);
+              await loadReceipts();
+            } catch (error) {
+              Alert.alert('Error', 'Failed to delete receipt');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const colors = Colors[colorScheme ?? 'light'];
+
+  return (
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      {/* Header */}
+      <View style={[styles.header, { borderBottomColor: colors.tabIconDefault }]}>
+        <Text style={[styles.title, { color: colors.text }]}>My Receipts</Text>
+        <TouchableOpacity onPress={handleOpenSettings} style={styles.settingsButton}>
+          <IconSymbol size={24} name="gearshape.fill" color={colors.text} />
+        </TouchableOpacity>
+      </View>
+
+      {/* Content */}
+      <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
+        {loading ? (
+          <View style={styles.emptyContainer}>
+            <Text style={[styles.emptyText, { color: colors.text }]}>Loading...</Text>
+          </View>
+        ) : receipts.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyEmoji}>📋</Text>
+            <Text style={[styles.emptyTitle, { color: colors.text }]}>No receipts yet</Text>
+            <Text style={[styles.emptySubtitle, { color: colors.tabIconDefault }]}>
+              Create your first receipt to get started
+            </Text>
+          </View>
+        ) : (
+          <View style={styles.receiptsList}>
+            {receipts.map((receipt) => (
+              <TouchableOpacity
+                key={receipt.id}
+                style={[styles.receiptCard, { backgroundColor: colors.background, borderColor: colors.tabIconDefault }]}
+                onPress={() => receipt.id && handleReceiptPress(receipt.id)}
+              >
+                <View style={styles.receiptCardHeader}>
+                  <View style={styles.receiptCardInfo}>
+                    <Text style={[styles.receiptNumber, { color: colors.text }]}>{receipt.receiptNumber}</Text>
+                    <Text style={[styles.receiptDate, { color: colors.tabIconDefault }]}>
+                      {formatDate(receipt.createdAt)}
+                    </Text>
+                  </View>
+                  <Text style={[styles.receiptTotal, { color: colors.tint }]}>
+                    {formatCurrency(receipt.total)}
+                  </Text>
+                </View>
+                <View style={styles.receiptCardFooter}>
+                  <Text style={[styles.receiptItemsCount, { color: colors.tabIconDefault }]}>
+                    {receipt.items.length} item(s)
+                  </Text>
+                  {receipt.id && (
+                    <TouchableOpacity
+                      onPress={(e) => handleDeleteReceipt(receipt.id!, e)}
+                      style={styles.deleteButton}
+                    >
+                      <IconSymbol size={16} name="trash.fill" color={colors.tabIconDefault} />
+                    </TouchableOpacity>
+                  )}
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+      </ScrollView>
+
+      {/* Bottom Action Button */}
+      <View style={[styles.footer, { borderTopColor: colors.tabIconDefault, backgroundColor: colors.background }]}>
+        <TouchableOpacity
+          style={[styles.createButton, { backgroundColor: colors.tint }]}
+          onPress={handleCreateReceipt}
+        >
+          <IconSymbol size={20} name="plus" color="#FFFFFF" />
+          <Text style={styles.createButtonText}>Create Receipt</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
+  container: {
+    flex: 1,
+  },
+  header: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    justifyContent: 'space-between',
+    padding: 16,
+    borderBottomWidth: 1,
   },
-  stepContainer: {
-    gap: 8,
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
+  settingsButton: {
+    padding: 8,
+  },
+  content: {
+    flex: 1,
+  },
+  contentContainer: {
+    padding: 16,
+    flexGrow: 1,
+  },
+  emptyContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 48,
+  },
+  emptyEmoji: {
+    fontSize: 64,
+    marginBottom: 16,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: '600',
     marginBottom: 8,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  emptySubtitle: {
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  receiptsList: {
+    gap: 12,
+  },
+  receiptCard: {
+    padding: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  receiptCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 8,
+  },
+  receiptCardInfo: {
+    flex: 1,
+  },
+  receiptNumber: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  receiptDate: {
+    fontSize: 12,
+  },
+  receiptTotal: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  receiptCardFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  receiptItemsCount: {
+    fontSize: 12,
+  },
+  deleteButton: {
+    padding: 4,
+  },
+  footer: {
+    padding: 16,
+    borderTopWidth: 1,
+  },
+  createButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 16,
+    borderRadius: 8,
+    gap: 8,
+  },
+  createButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });

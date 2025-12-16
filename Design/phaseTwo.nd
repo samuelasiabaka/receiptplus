@@ -1,0 +1,56 @@
+You are continuing development of an existing React Native Expo app.
+
+PHASE:
+Phase 2 — Business Profile & Branding Enhancements
+
+GOALS:
+- Improve business credibility
+- Reduce repeated data entry
+- Prepare for monetization
+
+NEW FEATURES (ONLY THESE):
+- Full business profile:
+  - Business name
+  - Logo
+  - Address
+  - Phone number
+  - CAC number (optional)
+  - Operational hours (optional)
+- Auto-fill receipts using profile
+- Receipt footer customization
+- Receipt history improvements
+
+STORAGE:
+- Still local-only
+- SQLite schema updates allowed
+- Data migration handled carefully
+
+MONETIZATION (NO PAYMENTS YET):
+- Introduce watermark logic
+- Paid features are toggled via local flag
+
+STRICT RULES:
+- NO backend
+- NO authentication
+- NO payment SDKs
+- NO cloud sync
+
+EXPECTED OUTPUT:
+- Updated data models
+- Profile edit UI
+- Receipt layout update
+- Watermark enable/disable logic
+- Clean refactor without breaking Phase 1
+
+Explain schema migrations clearly if introduced.
+
+export interface BusinessProfile {
+  id: number;
+  name: string;
+  phone: string;
+  address?: string;
+  cacNumber?: string;
+  logoUri?: string;
+  websiteUri?: string;
+  hours?: string;
+}
