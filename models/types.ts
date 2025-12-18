@@ -15,7 +15,8 @@ export interface Receipt {
   createdAt: string;
   items: ReceiptItem[];
   paymentStatus?: PaymentStatus;
-  customerName?: string;
+  customerName: string;
+  customerPhone?: string;
   notes?: string;
 }
 
@@ -26,5 +27,15 @@ export interface BusinessProfile {
   address?: string;
   cacNumber?: string;
   logoUri?: string;
+  websiteUri?: string;
+  customFooter?: string;
+}
+
+export interface InventoryItem {
+  id?: number;
+  name: string;
+  description?: string;
+  price: number;
+  createdAt: string;
 }
 

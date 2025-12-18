@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Alert, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Alert, Image, KeyboardAvoidingView, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
@@ -21,6 +21,8 @@ export default function BusinessProfileScreen() {
   const [address, setAddress] = useState('');
   const [cacNumber, setCacNumber] = useState('');
   const [logoUri, setLogoUri] = useState<string | null>(null);
+  const [websiteUri, setWebsiteUri] = useState('');
+  const [customFooter, setCustomFooter] = useState('');
 
   const colors = Colors[colorScheme ?? 'light'];
 
@@ -37,6 +39,8 @@ export default function BusinessProfileScreen() {
         setAddress(profile.address || '');
         setCacNumber(profile.cacNumber || '');
         setLogoUri(profile.logoUri || null);
+        setWebsiteUri(profile.websiteUri || '');
+        setCustomFooter(profile.customFooter || '');
       }
     } catch (error) {
       console.error('Error loading profile:', error);
@@ -97,6 +101,8 @@ export default function BusinessProfileScreen() {
         address: address.trim() || undefined,
         cacNumber: cacNumber.trim() || undefined,
         logoUri: logoUri || undefined,
+        websiteUri: websiteUri.trim() || undefined,
+        customFooter: customFooter.trim() || undefined,
       });
       Alert.alert('Success', 'Business profile saved successfully', [
         { text: 'OK', onPress: () => router.back() },
@@ -118,7 +124,11 @@ export default function BusinessProfileScreen() {
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <KeyboardAvoidingView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+    >
       {/* Header */}
       <View style={[styles.header, { borderBottomColor: colors.tabIconDefault, paddingTop: insets.top + 16 }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
@@ -129,7 +139,11 @@ export default function BusinessProfileScreen() {
       </View>
 
       {/* Content */}
-      <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
+      <ScrollView
+        style={styles.content}
+        contentContainerStyle={styles.contentContainer}
+        keyboardShouldPersistTaps="handled"
+      >
         {/* Logo Upload */}
         <View style={styles.section}>
           <Text style={[styles.label, { color: colors.text }]}>Logo</Text>
@@ -206,6 +220,38 @@ export default function BusinessProfileScreen() {
             onChangeText={setCacNumber}
           />
         </View>
+
+        {/* Website URI */}
+        <View style={styles.section}>
+          <Text style={[styles.label, { color: colors.text }]}>Website (Optional)</Text>
+          <TextInput
+            style={[styles.input, { backgroundColor: colors.background, borderColor: colors.tabIconDefault, color: colors.text }]}
+            placeholder="https://example.com"
+            placeholderTextColor={colors.tabIconDefault}
+            keyboardType="url"
+            autoCapitalize="none"
+            value={websiteUri}
+            onChangeText={setWebsiteUri}
+          />
+        </View>
+
+        {/* Custom Footer */}
+        <View style={styles.section}>
+          <Text style={[styles.label, { color: colors.text }]}>Custom Receipt Footer (Optional)</Text>
+          <TextInput
+            style={[styles.textArea, { backgroundColor: colors.background, borderColor: colors.tabIconDefault, color: colors.text }]}
+            placeholder="Thank you for your patronage!"
+            placeholderTextColor={colors.tabIconDefault}
+            value={customFooter}
+            onChangeText={setCustomFooter}
+            multiline
+            numberOfLines={3}
+            textAlignVertical="top"
+          />
+          <Text style={[styles.helperText, { color: colors.tabIconDefault }]}>
+            This text will appear at the bottom of your receipts. Leave empty to use default message.
+          </Text>
+        </View>
       </ScrollView>
 
       {/* Action Buttons */}
@@ -224,7 +270,7 @@ export default function BusinessProfileScreen() {
           <Text style={[styles.cancelButtonText, { color: colors.text }]}>Cancel</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -335,6 +381,18 @@ const styles = StyleSheet.create({
   cancelButtonText: {
     fontSize: 16,
     fontWeight: '600',
+  },
+  textArea: {
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    minHeight: 80,
+  },
+  helperText: {
+    fontSize: 12,
+    marginTop: 4,
+    fontStyle: 'italic',
   },
 });
 

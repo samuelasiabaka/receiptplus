@@ -108,8 +108,9 @@ export default function ReceiptPreviewScreen() {
   };
 
   const handleEdit = () => {
-    // Navigate back to create receipt with current receipt data
-    router.back();
+    if (receipt?.id) {
+      router.push(`/create-receipt?editId=${receipt.id}`);
+    }
   };
 
   if (loading) {
@@ -127,7 +128,7 @@ export default function ReceiptPreviewScreen() {
         <Text style={[styles.errorText, { color: colors.text }]}>Receipt not found</Text>
         <TouchableOpacity
           style={[styles.backButton, { backgroundColor: colors.tint }]}
-          onPress={() => router.back()}
+          onPress={() => router.push('/(tabs)')}
         >
           <Text style={styles.backButtonText}>Go Back</Text>
         </TouchableOpacity>
@@ -139,7 +140,7 @@ export default function ReceiptPreviewScreen() {
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={[styles.header, { borderBottomColor: colors.tabIconDefault, paddingTop: insets.top + 16 }]}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButtonHeader}>
+        <TouchableOpacity onPress={() => router.push('/(tabs)')} style={styles.backButtonHeader}>
           <IconSymbol size={24} name="chevron.left" color={colors.text} />
         </TouchableOpacity>
         <Text style={[styles.title, { color: colors.text }]}>Receipt</Text>

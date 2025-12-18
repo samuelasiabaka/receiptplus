@@ -1,29 +1,102 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Alert, KeyboardAvoidingView, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { saveReceipt } from '@/lib/storage';
-import { getBusinessProfile } from '@/lib/storage';
-import type { ReceiptItem } from '@/models/types';
+import { saveReceipt, updateReceipt, getBusinessProfile, getAllInventoryItems, searchInventoryItems, getReceiptById } from '@/lib/storage';
+import { initDb } from '@/lib/database';
+import type { ReceiptItem, InventoryItem, Receipt } from '@/models/types';
 import { generateReceiptNumber, formatCurrency } from '@/utils/receipt';
 
 export default function CreateReceiptScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams();
   const colorScheme = useColorScheme();
   const insets = useSafeAreaInsets();
+  const [editingReceiptId, setEditingReceiptId] = useState<number | null>(null);
   const [items, setItems] = useState<ReceiptItem[]>([]);
   const [description, setDescription] = useState('');
   const [quantity, setQuantity] = useState('');
   const [price, setPrice] = useState('');
   const [customerName, setCustomerName] = useState('');
-  const [paymentStatus, setPaymentStatus] = useState<'paid' | 'part_paid' | 'not_paid'>('not_paid');
+  const [customerPhone, setCustomerPhone] = useState('');
   const [notes, setNotes] = useState('');
+  
+  // Inventory state
+  const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
+  const [inventorySearch, setInventorySearch] = useState('');
+  const [showInventoryDropdown, setShowInventoryDropdown] = useState(false);
+  const [filteredInventory, setFilteredInventory] = useState<InventoryItem[]>([]);
 
   const colors = Colors[colorScheme ?? 'light'];
   const total = items.reduce((sum, item) => sum + item.quantity * item.price, 0);
+
+  useEffect(() => {
+    loadInventory();
+    loadReceiptForEdit();
+  }, [params.editId]);
+
+  useEffect(() => {
+    if (inventorySearch.length >= 2) {
+      searchInventory();
+    } else if (inventorySearch.length === 0) {
+      setFilteredInventory([]);
+      setShowInventoryDropdown(false);
+    } else {
+      setFilteredInventory([]);
+      setShowInventoryDropdown(false);
+    }
+  }, [inventorySearch]);
+
+  const loadInventory = async () => {
+    try {
+      await initDb();
+      const allItems = await getAllInventoryItems();
+      setInventoryItems(allItems);
+    } catch (error) {
+      console.error('Error loading inventory:', error);
+    }
+  };
+
+  const searchInventory = async () => {
+    try {
+      const results = await searchInventoryItems(inventorySearch);
+      setFilteredInventory(results);
+      setShowInventoryDropdown(results.length > 0);
+    } catch (error) {
+      console.error('Error searching inventory:', error);
+    }
+  };
+
+  const loadReceiptForEdit = async () => {
+    if (params.editId) {
+      try {
+        const receiptId = parseInt(params.editId as string);
+        if (!isNaN(receiptId)) {
+          const receipt = await getReceiptById(receiptId);
+          if (receipt) {
+            setEditingReceiptId(receiptId);
+            setItems(receipt.items || []);
+            setCustomerName(receipt.customerName || '');
+            setPaymentStatus(receipt.paymentStatus || 'not_paid');
+            setNotes(receipt.notes || '');
+          }
+        }
+      } catch (error) {
+        console.error('Error loading receipt for edit:', error);
+      }
+    }
+  };
+
+  const handleSelectInventoryItem = (item: InventoryItem) => {
+    setDescription(item.name);
+    setPrice(item.price.toString());
+    setInventorySearch('');
+    setShowInventoryDropdown(false);
+    setFilteredInventory([]);
+  };
 
   const handleAddItem = () => {
     if (!description.trim()) {
@@ -78,23 +151,61 @@ export default function CreateReceiptScreen() {
         return;
       }
 
-      const receiptNumber = generateReceiptNumber();
       const receiptTotal = validItems.reduce((sum, item) => sum + item.quantity * item.price, 0);
 
-      const receiptId = await saveReceipt(
-        {
-          receiptNumber,
-          total: receiptTotal,
-          createdAt: new Date().toISOString(),
-          items: validItems,
-          // paymentStatus, // Temporarily disabled
-          customerName: customerName.trim() || undefined,
-          // notes: notes.trim() || undefined, // Temporarily disabled
-        },
-        validItems
-      );
+      if (editingReceiptId) {
+        // Update existing receipt
+        const existingReceipt = await getReceiptById(editingReceiptId);
+        if (!existingReceipt) {
+          Alert.alert('Error', 'Receipt not found');
+          return;
+        }
 
-      router.push(`/receipt-preview?id=${receiptId}`);
+        await updateReceipt(
+          editingReceiptId,
+          {
+            receiptNumber: existingReceipt.receiptNumber, // Keep original receipt number
+            total: receiptTotal,
+            createdAt: existingReceipt.createdAt, // Keep original date
+            items: validItems,
+            customerName: customerName.trim(),
+            customerPhone: customerPhone.trim() || undefined,
+            notes: notes.trim() || undefined,
+          },
+          validItems
+        );
+
+        router.push(`/receipt-preview?id=${editingReceiptId}`);
+      } else {
+        // Create new receipt
+        const receiptNumber = generateReceiptNumber(profile.name);
+        const receiptId = await saveReceipt(
+          {
+            receiptNumber,
+            total: receiptTotal,
+            createdAt: new Date().toISOString(),
+            items: validItems,
+            customerName: customerName.trim(),
+            customerPhone: customerPhone.trim() || undefined,
+            notes: notes.trim() || undefined,
+          },
+          validItems
+        );
+
+        // Clear form after saving
+        setItems([]);
+        setDescription('');
+        setQuantity('');
+        setPrice('');
+        setCustomerName('');
+        setCustomerPhone('');
+        setNotes('');
+        setInventorySearch('');
+        setFilteredInventory([]);
+        setShowInventoryDropdown(false);
+        
+        router.push(`/receipt-preview?id=${receiptId}`);
+      }
     } catch (error) {
       console.error('Error saving receipt:', error);
       Alert.alert('Error', 'Failed to save receipt');
@@ -102,41 +213,99 @@ export default function CreateReceiptScreen() {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <KeyboardAvoidingView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+    >
       {/* Header */}
       <View style={[styles.header, { borderBottomColor: colors.tabIconDefault, paddingTop: insets.top + 16 }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <IconSymbol size={24} name="chevron.left" color={colors.text} />
         </TouchableOpacity>
-        <Text style={[styles.title, { color: colors.text }]}>Create Receipt</Text>
+        <Text style={[styles.title, { color: colors.text }]}>
+          {editingReceiptId ? 'Edit Receipt' : 'Create Receipt'}
+        </Text>
         <View style={styles.placeholder} />
       </View>
 
       {/* Content */}
-      <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
-        {/* Customer Name */}
+      <ScrollView
+        style={styles.content}
+        contentContainerStyle={styles.contentContainer}
+        keyboardShouldPersistTaps="handled"
+      >
+        {/* Customer Information */}
         <View style={[styles.inputSection, { backgroundColor: colors.background, borderColor: colors.tabIconDefault }]}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>Customer Information</Text>
           <TextInput
             style={[styles.input, { backgroundColor: colors.background, borderColor: colors.tabIconDefault, color: colors.text }]}
-            placeholder="Customer Name (Optional)"
+            placeholder="Customer Name *"
             placeholderTextColor={colors.tabIconDefault}
             value={customerName}
             onChangeText={setCustomerName}
+          />
+          <TextInput
+            style={[styles.input, { backgroundColor: colors.background, borderColor: colors.tabIconDefault, color: colors.text, marginTop: 12 }]}
+            placeholder="Customer Phone (Optional)"
+            placeholderTextColor={colors.tabIconDefault}
+            keyboardType="phone-pad"
+            value={customerPhone}
+            onChangeText={setCustomerPhone}
           />
         </View>
 
         {/* Item Input Section */}
         <View style={[styles.inputSection, { backgroundColor: colors.background, borderColor: colors.tabIconDefault }]}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>Add Items</Text>
+          <View style={styles.sectionHeader}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Add Items</Text>
+            <TouchableOpacity
+              onPress={() => router.push('/inventory')}
+              style={styles.inventoryLink}
+            >
+              <IconSymbol size={16} name="cube.box.fill" color={colors.tint} />
+              <Text style={[styles.inventoryLinkText, { color: colors.tint }]}>Manage Inventory</Text>
+            </TouchableOpacity>
+          </View>
 
           <View style={styles.inputGroup}>
+            <View style={styles.inventorySearchContainer}>
+              <TextInput
+                style={[styles.input, styles.inventorySearchInput, { backgroundColor: colors.background, borderColor: colors.tabIconDefault, color: colors.text }]}
+                placeholder="Search inventory (type 2+ letters)..."
+                placeholderTextColor={colors.tabIconDefault}
+                value={inventorySearch}
+                onChangeText={setInventorySearch}
+              />
+              {showInventoryDropdown && filteredInventory.length > 0 && (
+                <View style={[styles.inventoryDropdown, { backgroundColor: colors.background, borderColor: colors.tabIconDefault }]}>
+                  {filteredInventory.map((item) => (
+                    <TouchableOpacity
+                      key={item.id?.toString() || ''}
+                      style={[styles.inventoryDropdownItem, { borderBottomColor: colors.tabIconDefault }]}
+                      onPress={() => handleSelectInventoryItem(item)}
+                    >
+                      <View style={styles.inventoryDropdownItemContent}>
+                        <Text style={[styles.inventoryDropdownItemName, { color: colors.text }]}>{item.name}</Text>
+                        {item.description && (
+                          <Text style={[styles.inventoryDropdownItemDesc, { color: colors.tabIconDefault }]}>{item.description}</Text>
+                        )}
+                      </View>
+                      <Text style={[styles.inventoryDropdownItemPrice, { color: colors.tint }]}>{formatCurrency(item.price)}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
+            </View>
             <TextInput
               style={[styles.input, { backgroundColor: colors.background, borderColor: colors.tabIconDefault, color: colors.text }]}
               placeholder="Item description"
               placeholderTextColor={colors.tabIconDefault}
               value={description}
-              onChangeText={setDescription}
+              onChangeText={(text) => {
+                setDescription(text);
+                setInventorySearch(''); // Clear inventory search when typing manually
+              }}
             />
 
             <View style={styles.rowInputs}>
@@ -254,7 +423,9 @@ export default function CreateReceiptScreen() {
           onPress={handleGenerateReceipt}
           disabled={items.length === 0 || total === 0}
         >
-          <Text style={styles.generateButtonText}>Generate Receipt</Text>
+          <Text style={styles.generateButtonText}>
+            {editingReceiptId ? 'Update Receipt' : 'Generate Receipt'}
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.cancelButton, { backgroundColor: colors.background, borderColor: colors.tabIconDefault }]}
@@ -263,7 +434,7 @@ export default function CreateReceiptScreen() {
           <Text style={[styles.cancelButtonText, { color: colors.text }]}>Cancel</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -448,6 +619,69 @@ const styles = StyleSheet.create({
     padding: 12,
     fontSize: 16,
     minHeight: 100,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  inventoryLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  inventoryLinkText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  inventorySearchContainer: {
+    position: 'relative',
+    zIndex: 10,
+  },
+  inventorySearchInput: {
+    marginBottom: 8,
+  },
+  inventoryDropdown: {
+    position: 'absolute',
+    top: '100%',
+    left: 0,
+    right: 0,
+    maxHeight: 200,
+    borderRadius: 8,
+    borderWidth: 1,
+    marginTop: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 5,
+    zIndex: 1000,
+  },
+  inventoryDropdownList: {
+    maxHeight: 200,
+  },
+  inventoryDropdownItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 12,
+    borderBottomWidth: 1,
+  },
+  inventoryDropdownItemContent: {
+    flex: 1,
+  },
+  inventoryDropdownItemName: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  inventoryDropdownItemDesc: {
+    fontSize: 12,
+  },
+  inventoryDropdownItemPrice: {
+    fontSize: 14,
+    fontWeight: '600',
   },
 });
 

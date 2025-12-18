@@ -9,32 +9,6 @@ interface ReceiptViewProps {
 }
 
 export default function ReceiptView({ receipt, businessProfile }: ReceiptViewProps) {
-  const getPaymentStatusLabel = (status?: string) => {
-    switch (status) {
-      case 'paid':
-        return 'Paid';
-      case 'part_paid':
-        return 'Part Paid';
-      case 'not_paid':
-        return 'Not Paid';
-      default:
-        return 'Not Paid';
-    }
-  };
-
-  const getPaymentStatusColor = (status?: string) => {
-    switch (status) {
-      case 'paid':
-        return '#10B981'; // Green
-      case 'part_paid':
-        return '#F59E0B'; // Orange
-      case 'not_paid':
-        return '#EF4444'; // Red
-      default:
-        return '#6B7280'; // Gray
-    }
-  };
-
   return (
     <View style={styles.container}>
       {/* Header Section */}
@@ -44,7 +18,10 @@ export default function ReceiptView({ receipt, businessProfile }: ReceiptViewPro
           {businessProfile.address && <Text style={styles.businessAddress}>{businessProfile.address}</Text>}
           {businessProfile.phone && <Text style={styles.businessPhone}>{businessProfile.phone}</Text>}
           {businessProfile.cacNumber && (
-            <Text style={styles.businessCac}>CAC: {businessProfile.cacNumber}</Text>
+            <Text style={styles.businessCac}>{businessProfile.cacNumber}</Text>
+          )}
+          {businessProfile.websiteUri && (
+            <Text style={styles.businessWebsite}>{businessProfile.websiteUri}</Text>
           )}
         </View>
         <View style={styles.headerRight}>
@@ -59,21 +36,17 @@ export default function ReceiptView({ receipt, businessProfile }: ReceiptViewPro
       {/* Receipt Details */}
       <View style={styles.receiptDetailsRow}>
         <View style={styles.receiptDetailsLeft}>
-          {receipt.customerName && (
-            <View style={styles.billedToSection}>
-              <Text style={styles.billedToLabel}>Billed To</Text>
-              <Text style={styles.customerName}>{receipt.customerName}</Text>
-            </View>
-          )}
+          <View style={styles.billedToSection}>
+            <Text style={styles.billedToLabel}>Billed To</Text>
+            <Text style={styles.customerName}>{receipt.customerName}</Text>
+            {receipt.customerPhone && (
+              <Text style={styles.customerPhone}>{receipt.customerPhone}</Text>
+            )}
+          </View>
         </View>
         <View style={styles.receiptDetailsRight}>
           <Text style={styles.receiptNumber}>Receipt #: {receipt.receiptNumber}</Text>
           <Text style={styles.receiptDate}>Date: {formatDate(receipt.createdAt)}</Text>
-          {receipt.paymentStatus && (
-            <View style={[styles.paymentStatusBadge, { backgroundColor: getPaymentStatusColor(receipt.paymentStatus) }]}>
-              <Text style={styles.paymentStatusText}>{getPaymentStatusLabel(receipt.paymentStatus)}</Text>
-            </View>
-          )}
         </View>
       </View>
 
@@ -121,7 +94,9 @@ export default function ReceiptView({ receipt, businessProfile }: ReceiptViewPro
 
       {/* Footer */}
       <View style={styles.footer}>
-        <Text style={styles.footerText}>Thank you for your patronage!</Text>
+        <Text style={styles.footerText}>
+          {businessProfile.customFooter || 'Thank you for your patronage!'}
+        </Text>
       </View>
     </View>
   );
@@ -174,6 +149,11 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#6B7280',
   },
+  businessWebsite: {
+    fontSize: 12,
+    color: '#6B7280',
+    marginTop: 2,
+  },
   logo: {
     width: 80,
     height: 80,
@@ -224,9 +204,14 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   customerName: {
-    fontSize: 16,
+    fontSize: 12,
     fontWeight: '600',
     color: '#111827',
+  },
+  customerPhone: {
+    fontSize: 12,
+    color: '#6B7280',
+    marginTop: 2,
   },
   receiptNumber: {
     fontSize: 12,
@@ -237,17 +222,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#6B7280',
     marginBottom: 8,
-  },
-  paymentStatusBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
-    marginTop: 4,
-  },
-  paymentStatusText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: '#FFFFFF',
   },
   tableHeader: {
     flexDirection: 'row',

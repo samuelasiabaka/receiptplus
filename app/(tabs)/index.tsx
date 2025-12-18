@@ -5,8 +5,9 @@ import { initDb } from '@/lib/database';
 import { deleteReceipt, getAllReceipts } from '@/lib/storage';
 import type { Receipt } from '@/models/types';
 import { formatCurrency, formatDate } from '@/utils/receipt';
+import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -35,12 +36,23 @@ export default function HomeScreen() {
     loadReceipts();
   }, []);
 
+  // Refresh receipts when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      loadReceipts();
+    }, [])
+  );
+
   const handleCreateReceipt = () => {
     router.push('/create-receipt');
   };
 
   const handleOpenSettings = () => {
     router.push('/business-profile');
+  };
+
+  const handleOpenInventory = () => {
+    router.push('/inventory' as any);
   };
 
   const handleReceiptPress = (receiptId: number) => {
@@ -77,9 +89,14 @@ export default function HomeScreen() {
       {/* Header */}
       <View style={[styles.header, { borderBottomColor: colors.tabIconDefault, paddingTop: insets.top + 16 }]}>
         <Text style={[styles.title, { color: colors.text }]}>My Receipts</Text>
-        <TouchableOpacity onPress={handleOpenSettings} style={styles.settingsButton}>
-          <IconSymbol size={24} name="gearshape.fill" color={colors.text} />
-        </TouchableOpacity>
+        <View style={styles.headerButtons}>
+          <TouchableOpacity onPress={handleOpenInventory} style={styles.headerButton}>
+            <IconSymbol size={24} name="cube.box.fill" color={colors.text} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleOpenSettings} style={styles.headerButton}>
+            <IconSymbol size={24} name="gearshape.fill" color={colors.text} />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Content */}
@@ -163,6 +180,13 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
   },
+  headerButtons: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  headerButton: {
+    padding: 8,
+  },
   settingsButton: {
     padding: 8,
   },
@@ -191,6 +215,9 @@ const styles = StyleSheet.create({
   emptySubtitle: {
     fontSize: 14,
     textAlign: 'center',
+  },
+  emptyText: {
+    fontSize: 16,
   },
   receiptsList: {
     gap: 12,

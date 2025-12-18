@@ -28,6 +28,7 @@ export default function RootLayout() {
         <Stack.Screen name="create-receipt" options={{ headerShown: false, presentation: 'modal' }} />
         <Stack.Screen name="receipt-preview" options={{ headerShown: false, presentation: 'modal' }} />
         <Stack.Screen name="business-profile" options={{ headerShown: false, presentation: 'modal' }} />
+        <Stack.Screen name="inventory" options={{ headerShown: false, presentation: 'modal' }} />
         <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
       </Stack>
       <StatusBar style="auto" />

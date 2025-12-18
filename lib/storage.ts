@@ -1,6 +1,6 @@
 import { Platform } from 'react-native';
 import { getDb } from './database';
-import type { Receipt, ReceiptItem, BusinessProfile } from '@/models/types';
+import type { Receipt, ReceiptItem, BusinessProfile, InventoryItem } from '@/models/types';
 
 const isWeb = Platform.OS === 'web';
 
@@ -18,7 +18,7 @@ export const saveReceipt = (
 
     // Insert receipt
     const insertReceiptStmt = await db.prepareAsync(
-      'INSERT INTO receipts (receiptNumber, total, createdAt, paymentStatus, customerName, notes) VALUES (?, ?, ?, ?, ?, ?)'
+      'INSERT INTO receipts (receiptNumber, total, createdAt, paymentStatus, customerName, customerPhone, notes) VALUES (?, ?, ?, ?, ?, ?, ?)'
     );
 
     try {
@@ -28,6 +28,7 @@ export const saveReceipt = (
         receipt.createdAt,
         receipt.paymentStatus || null,
         receipt.customerName || null,
+        receipt.customerPhone || null,
         receipt.notes || null,
       ]);
 
@@ -76,6 +77,7 @@ export const getAllReceipts = (): Promise<Receipt[]> => {
       createdAt: string;
       paymentStatus?: string;
       customerName?: string;
+      customerPhone?: string;
       notes?: string;
     }>('SELECT * FROM receipts ORDER BY createdAt DESC');
 
@@ -90,7 +92,8 @@ export const getAllReceipts = (): Promise<Receipt[]> => {
           total: row.total,
           createdAt: row.createdAt,
           paymentStatus: row.paymentStatus as any,
-          customerName: row.customerName,
+          customerName: row.customerName || '',
+          customerPhone: row.customerPhone,
           notes: row.notes,
           items: [], // filled below
         });
@@ -151,6 +154,7 @@ export const getReceiptById = (id: number): Promise<Receipt | null> => {
       createdAt: string;
       paymentStatus?: string;
       customerName?: string;
+      customerPhone?: string;
       notes?: string;
     }>('SELECT * FROM receipts WHERE id = ? LIMIT 1');
 
@@ -193,7 +197,8 @@ export const getReceiptById = (id: number): Promise<Receipt | null> => {
           total: base.total,
           createdAt: base.createdAt,
           paymentStatus: base.paymentStatus as any,
-          customerName: base.customerName,
+          customerName: base.customerName || '',
+          customerPhone: base.customerPhone,
           notes: base.notes,
           items,
         };
@@ -202,6 +207,67 @@ export const getReceiptById = (id: number): Promise<Receipt | null> => {
       }
     } finally {
       await receiptStmt.finalizeAsync();
+    }
+  })();
+};
+
+export const updateReceipt = (
+  receiptId: number,
+  receipt: Omit<Receipt, 'id'>,
+  items: ReceiptItem[]
+): Promise<void> => {
+  if (isWeb) {
+    return Promise.reject(new Error('SQLite is not supported on web. Please use Android or iOS.'));
+  }
+  
+  return (async () => {
+    const db = getDb();
+
+    // Update receipt
+    const updateReceiptStmt = await db.prepareAsync(
+      'UPDATE receipts SET receiptNumber = ?, total = ?, paymentStatus = ?, customerName = ?, customerPhone = ?, notes = ? WHERE id = ?'
+    );
+
+    try {
+      await updateReceiptStmt.executeAsync([
+        receipt.receiptNumber,
+        receipt.total,
+        receipt.paymentStatus || null,
+        receipt.customerName || null,
+        receipt.customerPhone || null,
+        receipt.notes || null,
+        receiptId,
+      ]);
+    } finally {
+      await updateReceiptStmt.finalizeAsync();
+    }
+
+    // Delete existing items
+    const deleteItemsStmt = await db.prepareAsync('DELETE FROM receipt_items WHERE receiptId = ?');
+    try {
+      await deleteItemsStmt.executeAsync([receiptId]);
+    } finally {
+      await deleteItemsStmt.finalizeAsync();
+    }
+
+    // Insert new items
+    if (items.length) {
+      const insertItemStmt = await db.prepareAsync(
+        'INSERT INTO receipt_items (receiptId, description, quantity, price) VALUES (?, ?, ?, ?)'
+      );
+
+      try {
+        for (const item of items) {
+          await insertItemStmt.executeAsync([
+            receiptId,
+            item.description,
+            item.quantity,
+            item.price,
+          ]);
+        }
+      } finally {
+        await insertItemStmt.finalizeAsync();
+      }
     }
   })();
 };
@@ -246,7 +312,7 @@ export const saveBusinessProfile = (profile: Omit<BusinessProfile, 'id'>): Promi
         const existingId = first.value.id;
 
         const updateStmt = await db.prepareAsync(
-          'UPDATE business_profile SET name = ?, phone = ?, address = ?, cacNumber = ?, logoUri = ? WHERE id = ?'
+          'UPDATE business_profile SET name = ?, phone = ?, address = ?, cacNumber = ?, logoUri = ?, websiteUri = ?, customFooter = ? WHERE id = ?'
         );
 
         try {
@@ -256,6 +322,8 @@ export const saveBusinessProfile = (profile: Omit<BusinessProfile, 'id'>): Promi
             profile.address ?? null,
             profile.cacNumber ?? null,
             profile.logoUri ?? null,
+            profile.websiteUri ?? null,
+            profile.customFooter ?? null,
             existingId,
           ]);
         } finally {
@@ -270,7 +338,7 @@ export const saveBusinessProfile = (profile: Omit<BusinessProfile, 'id'>): Promi
 
     // Insert new profile
     const insertStmt = await db.prepareAsync(
-      'INSERT INTO business_profile (name, phone, address, cacNumber, logoUri) VALUES (?, ?, ?, ?, ?)'
+      'INSERT INTO business_profile (name, phone, address, cacNumber, logoUri, websiteUri, customFooter) VALUES (?, ?, ?, ?, ?, ?, ?)'
     );
 
     try {
@@ -280,6 +348,8 @@ export const saveBusinessProfile = (profile: Omit<BusinessProfile, 'id'>): Promi
         profile.address ?? null,
         profile.cacNumber ?? null,
         profile.logoUri ?? null,
+        profile.websiteUri ?? null,
+        profile.customFooter ?? null,
       ]);
 
       return result.lastInsertRowId ?? 0;
@@ -304,6 +374,8 @@ export const getBusinessProfile = (): Promise<BusinessProfile | null> => {
       address: string | null;
       cacNumber: string | null;
       logoUri: string | null;
+      websiteUri: string | null;
+      customFooter: string | null;
     }>('SELECT * FROM business_profile LIMIT 1');
 
     try {
@@ -324,7 +396,153 @@ export const getBusinessProfile = (): Promise<BusinessProfile | null> => {
         address: profile.address ?? undefined,
         cacNumber: profile.cacNumber ?? undefined,
         logoUri: profile.logoUri ?? undefined,
+        websiteUri: profile.websiteUri ?? undefined,
+        customFooter: profile.customFooter ?? undefined,
       };
+    } finally {
+      await stmt.finalizeAsync();
+    }
+  })();
+};
+
+// Inventory operations
+export const saveInventoryItem = (item: Omit<InventoryItem, 'id'>): Promise<number> => {
+  if (isWeb) {
+    return Promise.reject(new Error('SQLite is not supported on web. Please use Android or iOS.'));
+  }
+  
+  return (async () => {
+    const db = getDb();
+
+    const insertStmt = await db.prepareAsync(
+      'INSERT INTO inventory_items (name, description, price, createdAt) VALUES (?, ?, ?, ?)'
+    );
+
+    try {
+      const result = await insertStmt.executeAsync<{ lastInsertRowId: number }>([
+        item.name,
+        item.description ?? null,
+        item.price,
+        item.createdAt,
+      ]);
+
+      return result.lastInsertRowId ?? 0;
+    } finally {
+      await insertStmt.finalizeAsync();
+    }
+  })();
+};
+
+export const getAllInventoryItems = (): Promise<InventoryItem[]> => {
+  if (isWeb) {
+    return Promise.resolve([]);
+  }
+  
+  return (async () => {
+    const db = getDb();
+
+    const stmt = await db.prepareAsync<{
+      id: number;
+      name: string;
+      description: string | null;
+      price: number;
+      createdAt: string;
+    }>('SELECT * FROM inventory_items ORDER BY name ASC');
+
+    const items: InventoryItem[] = [];
+
+    try {
+      const result = await stmt.executeAsync();
+      for await (const row of result) {
+        items.push({
+          id: row.id,
+          name: row.name,
+          description: row.description ?? undefined,
+          price: row.price,
+          createdAt: row.createdAt,
+        });
+      }
+    } finally {
+      await stmt.finalizeAsync();
+    }
+
+    return items;
+  })();
+};
+
+export const searchInventoryItems = (searchTerm: string): Promise<InventoryItem[]> => {
+  if (isWeb) {
+    return Promise.resolve([]);
+  }
+  
+  return (async () => {
+    const db = getDb();
+
+    const stmt = await db.prepareAsync<{
+      id: number;
+      name: string;
+      description: string | null;
+      price: number;
+      createdAt: string;
+    }>('SELECT * FROM inventory_items WHERE name LIKE ? OR description LIKE ? ORDER BY name ASC');
+
+    const searchPattern = `%${searchTerm}%`;
+    const items: InventoryItem[] = [];
+
+    try {
+      const result = await stmt.executeAsync([searchPattern, searchPattern]);
+      for await (const row of result) {
+        items.push({
+          id: row.id,
+          name: row.name,
+          description: row.description ?? undefined,
+          price: row.price,
+          createdAt: row.createdAt,
+        });
+      }
+    } finally {
+      await stmt.finalizeAsync();
+    }
+
+    return items;
+  })();
+};
+
+export const updateInventoryItem = (id: number, item: Omit<InventoryItem, 'id' | 'createdAt'>): Promise<void> => {
+  if (isWeb) {
+    return Promise.reject(new Error('SQLite is not supported on web. Please use Android or iOS.'));
+  }
+  
+  return (async () => {
+    const db = getDb();
+    const stmt = await db.prepareAsync(
+      'UPDATE inventory_items SET name = ?, description = ?, price = ? WHERE id = ?'
+    );
+
+    try {
+      await stmt.executeAsync([
+        item.name,
+        item.description ?? null,
+        item.price,
+        id,
+      ]);
+    } finally {
+      await stmt.finalizeAsync();
+    }
+  })();
+};
+
+export const deleteInventoryItem = (id: number): Promise<void> => {
+  if (isWeb) {
+    return Promise.resolve();
+  }
+  
+  return (async () => {
+    const db = getDb();
+    const stmt = await db.prepareAsync('DELETE FROM inventory_items WHERE id = ?');
+
+    try {
+      await stmt.executeAsync([id]);
     } finally {
       await stmt.finalizeAsync();
     }
