@@ -1,17 +1,19 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
-import { useRouter } from 'expo-router';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { initDb } from '@/lib/database';
-import { getAllReceipts, deleteReceipt } from '@/lib/storage';
+import { deleteReceipt, getAllReceipts } from '@/lib/storage';
 import type { Receipt } from '@/models/types';
 import { formatCurrency, formatDate } from '@/utils/receipt';
+import { useRouter } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function HomeScreen() {
   const router = useRouter();
   const colorScheme = useColorScheme();
+  const insets = useSafeAreaInsets();
   const [receipts, setReceipts] = useState<Receipt[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -73,7 +75,7 @@ export default function HomeScreen() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
-      <View style={[styles.header, { borderBottomColor: colors.tabIconDefault }]}>
+      <View style={[styles.header, { borderBottomColor: colors.tabIconDefault, paddingTop: insets.top + 16 }]}>
         <Text style={[styles.title, { color: colors.text }]}>My Receipts</Text>
         <TouchableOpacity onPress={handleOpenSettings} style={styles.settingsButton}>
           <IconSymbol size={24} name="gearshape.fill" color={colors.text} />
@@ -135,7 +137,7 @@ export default function HomeScreen() {
       {/* Bottom Action Button */}
       <View style={[styles.footer, { borderTopColor: colors.tabIconDefault, backgroundColor: colors.background }]}>
         <TouchableOpacity
-          style={[styles.createButton, { backgroundColor: colors.tint }]}
+          style={styles.createButton}
           onPress={handleCreateReceipt}
         >
           <IconSymbol size={20} name="plus" color="#FFFFFF" />
@@ -241,10 +243,19 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 8,
     gap: 8,
+    backgroundColor: '#2563EB', // Brand Primary color - Tech Blue
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3, // Android shadow
   },
   createButtonText: {
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
+    textShadowColor: 'rgba(0, 0, 0, 0.1)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
 });

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Alert, Image } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -11,6 +12,7 @@ import type { BusinessProfile } from '@/models/types';
 export default function BusinessProfileScreen() {
   const router = useRouter();
   const colorScheme = useColorScheme();
+  const insets = useSafeAreaInsets();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   
@@ -52,14 +54,24 @@ export default function BusinessProfileScreen() {
       }
 
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: ['images'],
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.8,
       });
 
-      if (!result.canceled && result.assets[0]) {
-        setLogoUri(result.assets[0].uri);
+      console.log('Image picker result:', result);
+      
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const selectedImage = result.assets[0];
+        console.log('Selected image URI:', selectedImage.uri);
+        setLogoUri(selectedImage.uri);
+        Alert.alert('Success', 'Logo selected. Tap "Save Profile" to save it.');
+      } else if (result.canceled) {
+        console.log('User canceled image picker');
+      } else {
+        console.log('No image selected');
+        Alert.alert('No Image', 'No image was selected');
       }
     } catch (error) {
       console.error('Error picking image:', error);
@@ -108,7 +120,7 @@ export default function BusinessProfileScreen() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
-      <View style={[styles.header, { borderBottomColor: colors.tabIconDefault }]}>
+      <View style={[styles.header, { borderBottomColor: colors.tabIconDefault, paddingTop: insets.top + 16 }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <IconSymbol size={24} name="chevron.left" color={colors.text} />
         </TouchableOpacity>
@@ -122,11 +134,11 @@ export default function BusinessProfileScreen() {
         <View style={styles.section}>
           <Text style={[styles.label, { color: colors.text }]}>Logo</Text>
           <TouchableOpacity
-            style={[styles.logoButton, { borderColor: colors.tabIconDefault }]}
+            style={[logoUri ? styles.logoButtonWithImage : styles.logoButton, { borderColor: colors.tabIconDefault }]}
             onPress={handlePickImage}
           >
             {logoUri ? (
-              <Image source={{ uri: logoUri }} style={styles.logo} />
+              <Image source={{ uri: logoUri }} style={styles.logo} resizeMode="contain" />
             ) : (
               <>
                 <IconSymbol size={24} name="photo" color={colors.tabIconDefault} />
@@ -134,6 +146,14 @@ export default function BusinessProfileScreen() {
               </>
             )}
           </TouchableOpacity>
+          {logoUri && (
+            <TouchableOpacity
+              onPress={() => setLogoUri(null)}
+              style={styles.removeLogoButton}
+            >
+              <Text style={[styles.removeLogoText, { color: '#EF4444' }]}>Remove Logo</Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* Business Name */}
@@ -264,10 +284,26 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
   },
+  logoButtonWithImage: {
+    width: '100%',
+    height: 120,
+    borderWidth: 1,
+    borderStyle: 'solid',
+    borderRadius: 8,
+    overflow: 'hidden',
+    backgroundColor: '#F9FAFB',
+  },
   logo: {
     width: '100%',
     height: '100%',
-    borderRadius: 8,
+  },
+  removeLogoButton: {
+    marginTop: 8,
+    alignSelf: 'flex-end',
+  },
+  removeLogoText: {
+    fontSize: 12,
+    fontWeight: '600',
   },
   logoButtonText: {
     fontSize: 14,

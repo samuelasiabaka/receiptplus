@@ -63,3 +63,21 @@ EXPECTED OUTPUT:
 
 If suggesting code, provide complete, runnable snippets.
 Always explain architectural decisions briefly.
+
+
+import * as SQLite from 'expo-sqlite';
+
+export const db = SQLite.openDatabase('receipts.db');
+
+export const initDb = () => {
+  db.transaction(tx => {
+    tx.executeSql(`
+      CREATE TABLE IF NOT EXISTS receipts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        receiptNumber TEXT,
+        total REAL,
+        createdAt TEXT
+      );
+    `);
+  });
+};

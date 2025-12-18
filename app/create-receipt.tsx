@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Alert } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
@@ -12,10 +13,14 @@ import { generateReceiptNumber, formatCurrency } from '@/utils/receipt';
 export default function CreateReceiptScreen() {
   const router = useRouter();
   const colorScheme = useColorScheme();
-  const [items, setItems] = useState<ReceiptItem[]>([{ description: '', quantity: 1, price: 0 }]);
+  const insets = useSafeAreaInsets();
+  const [items, setItems] = useState<ReceiptItem[]>([]);
   const [description, setDescription] = useState('');
-  const [quantity, setQuantity] = useState('1');
+  const [quantity, setQuantity] = useState('');
   const [price, setPrice] = useState('');
+  const [customerName, setCustomerName] = useState('');
+  const [paymentStatus, setPaymentStatus] = useState<'paid' | 'part_paid' | 'not_paid'>('not_paid');
+  const [notes, setNotes] = useState('');
 
   const colors = Colors[colorScheme ?? 'light'];
   const total = items.reduce((sum, item) => sum + item.quantity * item.price, 0);
@@ -37,15 +42,11 @@ export default function CreateReceiptScreen() {
     };
     setItems([...items, newItem]);
     setDescription('');
-    setQuantity('1');
+    setQuantity('');
     setPrice('');
   };
 
   const handleRemoveItem = (index: number) => {
-    if (items.length === 1) {
-      Alert.alert('Error', 'At least one item is required');
-      return;
-    }
     setItems(items.filter((_, i) => i !== index));
   };
 
@@ -86,6 +87,9 @@ export default function CreateReceiptScreen() {
           total: receiptTotal,
           createdAt: new Date().toISOString(),
           items: validItems,
+          // paymentStatus, // Temporarily disabled
+          customerName: customerName.trim() || undefined,
+          // notes: notes.trim() || undefined, // Temporarily disabled
         },
         validItems
       );
@@ -100,7 +104,7 @@ export default function CreateReceiptScreen() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
-      <View style={[styles.header, { borderBottomColor: colors.tabIconDefault }]}>
+      <View style={[styles.header, { borderBottomColor: colors.tabIconDefault, paddingTop: insets.top + 16 }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <IconSymbol size={24} name="chevron.left" color={colors.text} />
         </TouchableOpacity>
@@ -110,6 +114,18 @@ export default function CreateReceiptScreen() {
 
       {/* Content */}
       <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
+        {/* Customer Name */}
+        <View style={[styles.inputSection, { backgroundColor: colors.background, borderColor: colors.tabIconDefault }]}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Customer Information</Text>
+          <TextInput
+            style={[styles.input, { backgroundColor: colors.background, borderColor: colors.tabIconDefault, color: colors.text }]}
+            placeholder="Customer Name (Optional)"
+            placeholderTextColor={colors.tabIconDefault}
+            value={customerName}
+            onChangeText={setCustomerName}
+          />
+        </View>
+
         {/* Item Input Section */}
         <View style={[styles.inputSection, { backgroundColor: colors.background, borderColor: colors.tabIconDefault }]}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>Add Items</Text>
@@ -126,7 +142,7 @@ export default function CreateReceiptScreen() {
             <View style={styles.rowInputs}>
               <TextInput
                 style={[styles.input, styles.halfInput, { backgroundColor: colors.background, borderColor: colors.tabIconDefault, color: colors.text }]}
-                placeholder="Qty"
+                placeholder="Quantity"
                 placeholderTextColor={colors.tabIconDefault}
                 keyboardType="numeric"
                 value={quantity}
@@ -134,7 +150,7 @@ export default function CreateReceiptScreen() {
               />
               <TextInput
                 style={[styles.input, styles.halfInput, { backgroundColor: colors.background, borderColor: colors.tabIconDefault, color: colors.text }]}
-                placeholder="Price"
+                placeholder="Rate"
                 placeholderTextColor={colors.tabIconDefault}
                 keyboardType="decimal-pad"
                 value={price}
@@ -143,7 +159,7 @@ export default function CreateReceiptScreen() {
             </View>
 
             <TouchableOpacity
-              style={[styles.addButton, { backgroundColor: colors.tint }]}
+              style={styles.addButton}
               onPress={handleAddItem}
               disabled={!description.trim() || !price}
             >
@@ -153,25 +169,68 @@ export default function CreateReceiptScreen() {
         </View>
 
         {/* Items List */}
-        <View style={styles.itemsList}>
-          {items.map((item, index) => (
-            <View key={index} style={[styles.itemCard, { backgroundColor: colors.background, borderColor: colors.tabIconDefault }]}>
-              <View style={styles.itemCardContent}>
-                <Text style={[styles.itemDescription, { color: colors.text }]}>{item.description || 'New Item'}</Text>
-                <Text style={[styles.itemDetails, { color: colors.tabIconDefault }]}>
-                  {item.quantity} × {formatCurrency(item.price)} = {formatCurrency(item.quantity * item.price)}
-                </Text>
-              </View>
-              <TouchableOpacity
-                onPress={() => handleRemoveItem(index)}
-                style={styles.deleteItemButton}
-                disabled={items.length === 1}
-              >
-                <IconSymbol size={20} name="trash.fill" color={items.length === 1 ? colors.tabIconDefault : '#FF3B30'} />
-              </TouchableOpacity>
-            </View>
-          ))}
-        </View>
+        {items.length > 0 && (
+          <View style={styles.itemsList}>
+            {items
+              .filter((item) => item.description.trim() && item.price > 0)
+              .map((item, index) => (
+                <View key={index} style={[styles.itemCard, { backgroundColor: colors.background, borderColor: colors.tabIconDefault }]}>
+                  <View style={styles.itemCardContent}>
+                    <Text style={[styles.itemDescription, { color: colors.text }]}>{item.description}</Text>
+                    <Text style={[styles.itemDetails, { color: colors.tabIconDefault }]}>
+                      {item.quantity} × {formatCurrency(item.price)} = {formatCurrency(item.quantity * item.price)}
+                    </Text>
+                  </View>
+                  <TouchableOpacity
+                    onPress={() => handleRemoveItem(index)}
+                    style={styles.deleteItemButton}
+                  >
+                    <IconSymbol size={20} name="trash.fill" color="#FF3B30" />
+                  </TouchableOpacity>
+                </View>
+              ))}
+          </View>
+        )}
+
+        {/* Payment Status - Temporarily Disabled */}
+        {/* <View style={[styles.inputSection, { backgroundColor: colors.background, borderColor: colors.tabIconDefault }]}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Payment Status</Text>
+          <View style={styles.statusButtons}>
+            <TouchableOpacity
+              style={[styles.statusButton, paymentStatus === 'paid' && styles.statusButtonActive, { borderColor: colors.tabIconDefault }]}
+              onPress={() => setPaymentStatus('paid')}
+            >
+              <Text style={[styles.statusButtonText, { color: paymentStatus === 'paid' ? '#FFFFFF' : colors.text }]}>Paid</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.statusButton, paymentStatus === 'part_paid' && styles.statusButtonActive, { borderColor: colors.tabIconDefault }]}
+              onPress={() => setPaymentStatus('part_paid')}
+            >
+              <Text style={[styles.statusButtonText, { color: paymentStatus === 'part_paid' ? '#FFFFFF' : colors.text }]}>Part Paid</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.statusButton, paymentStatus === 'not_paid' && styles.statusButtonActive, { borderColor: colors.tabIconDefault }]}
+              onPress={() => setPaymentStatus('not_paid')}
+            >
+              <Text style={[styles.statusButtonText, { color: paymentStatus === 'not_paid' ? '#FFFFFF' : colors.text }]}>Not Paid</Text>
+            </TouchableOpacity>
+          </View>
+        </View> */}
+
+        {/* Notes - Temporarily Disabled */}
+        {/* <View style={[styles.inputSection, { backgroundColor: colors.background, borderColor: colors.tabIconDefault }]}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Notes (Optional)</Text>
+          <TextInput
+            style={[styles.textArea, { backgroundColor: colors.background, borderColor: colors.tabIconDefault, color: colors.text }]}
+            placeholder="Add any additional notes..."
+            placeholderTextColor={colors.tabIconDefault}
+            value={notes}
+            onChangeText={setNotes}
+            multiline
+            numberOfLines={4}
+            textAlignVertical="top"
+          />
+        </View> */}
 
         {/* Total Summary */}
         {items.length > 0 && (
@@ -182,7 +241,7 @@ export default function CreateReceiptScreen() {
             </View>
             <View style={[styles.totalRow, styles.totalRowFinal]}>
               <Text style={[styles.totalLabelFinal, { color: colors.text }]}>Total:</Text>
-              <Text style={[styles.totalValueFinal, { color: colors.tint }]}>{formatCurrency(total)}</Text>
+              <Text style={[styles.totalValueFinal, { color: '#2563EB' }]}>{formatCurrency(total)}</Text>
             </View>
           </View>
         )}
@@ -191,7 +250,7 @@ export default function CreateReceiptScreen() {
       {/* Action Buttons */}
       <View style={[styles.footer, { borderTopColor: colors.tabIconDefault, backgroundColor: colors.background }]}>
         <TouchableOpacity
-          style={[styles.generateButton, { backgroundColor: colors.tint }]}
+          style={styles.generateButton}
           onPress={handleGenerateReceipt}
           disabled={items.length === 0 || total === 0}
         >
@@ -267,6 +326,7 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 8,
     alignItems: 'center',
+    backgroundColor: '#2563EB', // Brand Primary - Tech Blue
   },
   addButtonText: {
     color: '#FFFFFF',
@@ -338,11 +398,20 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 8,
     alignItems: 'center',
+    backgroundColor: '#2563EB', // Brand Primary - Tech Blue
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   generateButtonText: {
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
+    textShadowColor: 'rgba(0, 0, 0, 0.1)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   cancelButton: {
     padding: 16,
@@ -353,6 +422,32 @@ const styles = StyleSheet.create({
   cancelButtonText: {
     fontSize: 16,
     fontWeight: '600',
+  },
+  statusButtons: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  statusButton: {
+    flex: 1,
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    alignItems: 'center',
+  },
+  statusButtonActive: {
+    backgroundColor: '#2563EB',
+    borderColor: '#2563EB',
+  },
+  statusButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  textArea: {
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    minHeight: 100,
   },
 });
 

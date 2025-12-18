@@ -18,7 +18,7 @@ export const saveReceipt = (
 
     // Insert receipt
     const insertReceiptStmt = await db.prepareAsync(
-      'INSERT INTO receipts (receiptNumber, total, createdAt) VALUES (?, ?, ?)'
+      'INSERT INTO receipts (receiptNumber, total, createdAt, paymentStatus, customerName, notes) VALUES (?, ?, ?, ?, ?, ?)'
     );
 
     try {
@@ -26,6 +26,9 @@ export const saveReceipt = (
         receipt.receiptNumber,
         receipt.total,
         receipt.createdAt,
+        receipt.paymentStatus || null,
+        receipt.customerName || null,
+        receipt.notes || null,
       ]);
 
       const receiptId = result.lastInsertRowId ?? 0;
@@ -71,6 +74,9 @@ export const getAllReceipts = (): Promise<Receipt[]> => {
       receiptNumber: string;
       total: number;
       createdAt: string;
+      paymentStatus?: string;
+      customerName?: string;
+      notes?: string;
     }>('SELECT * FROM receipts ORDER BY createdAt DESC');
 
     const receipts: Receipt[] = [];
@@ -83,6 +89,9 @@ export const getAllReceipts = (): Promise<Receipt[]> => {
           receiptNumber: row.receiptNumber,
           total: row.total,
           createdAt: row.createdAt,
+          paymentStatus: row.paymentStatus as any,
+          customerName: row.customerName,
+          notes: row.notes,
           items: [], // filled below
         });
       }
@@ -140,6 +149,9 @@ export const getReceiptById = (id: number): Promise<Receipt | null> => {
       receiptNumber: string;
       total: number;
       createdAt: string;
+      paymentStatus?: string;
+      customerName?: string;
+      notes?: string;
     }>('SELECT * FROM receipts WHERE id = ? LIMIT 1');
 
     try {
@@ -180,6 +192,9 @@ export const getReceiptById = (id: number): Promise<Receipt | null> => {
           receiptNumber: base.receiptNumber,
           total: base.total,
           createdAt: base.createdAt,
+          paymentStatus: base.paymentStatus as any,
+          customerName: base.customerName,
+          notes: base.notes,
           items,
         };
       } finally {

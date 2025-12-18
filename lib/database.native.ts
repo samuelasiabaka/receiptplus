@@ -44,5 +44,33 @@ export const initDb = async () => {
       logoUri TEXT
     );
   `);
+
+  // Migrate existing database: Add new columns if they don't exist
+  // SQLite doesn't support IF NOT EXISTS for ALTER TABLE, so we check the schema
+  try {
+    const schemaCheck = await db.prepareAsync('PRAGMA table_info(receipts)');
+    const schemaResult = await schemaCheck.executeAsync();
+    const columns = new Set<string>();
+    
+    for await (const row of schemaResult) {
+      columns.add(row.name as string);
+    }
+    
+    await schemaCheck.finalizeAsync();
+    
+    // Add missing columns
+    if (!columns.has('paymentStatus')) {
+      await db.execAsync('ALTER TABLE receipts ADD COLUMN paymentStatus TEXT');
+    }
+    if (!columns.has('customerName')) {
+      await db.execAsync('ALTER TABLE receipts ADD COLUMN customerName TEXT');
+    }
+    if (!columns.has('notes')) {
+      await db.execAsync('ALTER TABLE receipts ADD COLUMN notes TEXT');
+    }
+  } catch (error) {
+    // If table doesn't exist yet, the CREATE TABLE above will handle it
+    console.log('Migration check:', error);
+  }
 };
 

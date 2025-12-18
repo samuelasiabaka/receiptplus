@@ -1,22 +1,21 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, ActivityIndicator } from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
-import { captureRef } from 'react-native-view-shot';
-import * as Sharing from 'expo-sharing';
+import ReceiptView from '@/components/receipt-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { getReceiptById } from '@/lib/storage';
-import { getBusinessProfile } from '@/lib/storage';
-import type { Receipt, BusinessProfile } from '@/models/types';
-import ReceiptView from '@/components/receipt-view';
-import { formatReceiptText } from '@/utils/receipt';
-import * as Linking from 'expo-linking';
+import { getBusinessProfile, getReceiptById } from '@/lib/storage';
+import type { BusinessProfile, Receipt } from '@/models/types';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import * as Sharing from 'expo-sharing';
+import React, { useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { captureRef } from 'react-native-view-shot';
 
 export default function ReceiptPreviewScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const colorScheme = useColorScheme();
+  const insets = useSafeAreaInsets();
   const receiptRef = useRef<View>(null);
   
   const [receipt, setReceipt] = useState<Receipt | null>(null);
@@ -89,38 +88,20 @@ export default function ReceiptPreviewScreen() {
           quality: 0.9,
         });
 
-        // Share via WhatsApp (through the native share sheet)
-        const whatsappUrl = `whatsapp://send?text=${encodeURIComponent('Receipt attached')}`;
-        const canOpen = await Linking.canOpenURL(whatsappUrl);
-        
-        if (canOpen) {
-          // Try to share the image file
-          if (await Sharing.isAvailableAsync()) {
-            await Sharing.shareAsync(fileUri, {
-              mimeType: 'image/png',
-              dialogTitle: 'Share receipt via WhatsApp',
-            });
-          } else {
-            // Fallback: share as text
-            const receiptText = formatReceiptText(receipt, businessProfile);
-            const textUrl = `whatsapp://send?text=${encodeURIComponent(receiptText)}`;
-            await Linking.openURL(textUrl);
-          }
+        // Use native share sheet - user can select WhatsApp
+        if (await Sharing.isAvailableAsync()) {
+          await Sharing.shareAsync(fileUri, {
+            mimeType: 'image/png',
+            dialogTitle: 'Share receipt',
+            UTI: 'public.png',
+          });
         } else {
-          // Fallback: share as text
-          const receiptText = formatReceiptText(receipt, businessProfile);
-          const textUrl = `whatsapp://send?text=${encodeURIComponent(receiptText)}`;
-          await Linking.openURL(textUrl);
+          Alert.alert('Error', 'Sharing is not available on this device');
         }
       }
     } catch (error) {
       console.error('Error sharing receipt:', error);
-      // Fallback: share as text
-      if (receipt && businessProfile) {
-        const receiptText = formatReceiptText(receipt, businessProfile);
-        const textUrl = `whatsapp://send?text=${encodeURIComponent(receiptText)}`;
-        await Linking.openURL(textUrl);
-      }
+      Alert.alert('Error', 'Failed to share receipt. Please try again.');
     } finally {
       setSharing(false);
     }
@@ -157,7 +138,7 @@ export default function ReceiptPreviewScreen() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
-      <View style={[styles.header, { borderBottomColor: colors.tabIconDefault }]}>
+      <View style={[styles.header, { borderBottomColor: colors.tabIconDefault, paddingTop: insets.top + 16 }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButtonHeader}>
           <IconSymbol size={24} name="chevron.left" color={colors.text} />
         </TouchableOpacity>
@@ -235,9 +216,12 @@ const styles = StyleSheet.create({
   contentContainer: {
     padding: 16,
     alignItems: 'center',
+    width: '100%',
   },
   receiptWrapper: {
     backgroundColor: '#FFFFFF',
+    width: '100%',
+    alignSelf: 'center',
   },
   loadingText: {
     marginTop: 16,

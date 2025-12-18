@@ -9,53 +9,115 @@ interface ReceiptViewProps {
 }
 
 export default function ReceiptView({ receipt, businessProfile }: ReceiptViewProps) {
+  const getPaymentStatusLabel = (status?: string) => {
+    switch (status) {
+      case 'paid':
+        return 'Paid';
+      case 'part_paid':
+        return 'Part Paid';
+      case 'not_paid':
+        return 'Not Paid';
+      default:
+        return 'Not Paid';
+    }
+  };
+
+  const getPaymentStatusColor = (status?: string) => {
+    switch (status) {
+      case 'paid':
+        return '#10B981'; // Green
+      case 'part_paid':
+        return '#F59E0B'; // Orange
+      case 'not_paid':
+        return '#EF4444'; // Red
+      default:
+        return '#6B7280'; // Gray
+    }
+  };
+
   return (
     <View style={styles.container}>
-      {/* Logo Placeholder */}
-      {businessProfile.logoUri ? (
-        <Image source={{ uri: businessProfile.logoUri }} style={styles.logo} />
-      ) : (
-        <View style={styles.logoPlaceholder}>
-          <Text style={styles.logoText}>📦</Text>
+      {/* Header Section */}
+      <View style={styles.header}>
+        <View style={styles.headerLeft}>
+          <Text style={styles.businessName}>{businessProfile.name}</Text>
+          {businessProfile.address && <Text style={styles.businessAddress}>{businessProfile.address}</Text>}
+          {businessProfile.phone && <Text style={styles.businessPhone}>{businessProfile.phone}</Text>}
+          {businessProfile.cacNumber && (
+            <Text style={styles.businessCac}>CAC: {businessProfile.cacNumber}</Text>
+          )}
         </View>
-      )}
-
-      {/* Business Info */}
-      <View style={styles.businessInfo}>
-        <Text style={styles.businessName}>{businessProfile.name}</Text>
-        {businessProfile.address && <Text style={styles.businessText}>{businessProfile.address}</Text>}
-        {businessProfile.phone && <Text style={styles.businessText}>{businessProfile.phone}</Text>}
-        {businessProfile.cacNumber && (
-          <Text style={styles.businessText}>CAC: {businessProfile.cacNumber}</Text>
-        )}
+        <View style={styles.headerRight}>
+          {businessProfile.logoUri ? (
+            <Image source={{ uri: businessProfile.logoUri }} style={styles.logo} resizeMode="contain" />
+          ) : (
+            <Text style={styles.receiptTitle}>RECEIPT</Text>
+          )}
+        </View>
       </View>
 
       {/* Receipt Details */}
-      <View style={styles.receiptDetails}>
-        <Text style={styles.receiptText}>Receipt #: {receipt.receiptNumber}</Text>
-        <Text style={styles.receiptText}>Date: {formatDate(receipt.createdAt)}</Text>
+      <View style={styles.receiptDetailsRow}>
+        <View style={styles.receiptDetailsLeft}>
+          {receipt.customerName && (
+            <View style={styles.billedToSection}>
+              <Text style={styles.billedToLabel}>Billed To</Text>
+              <Text style={styles.customerName}>{receipt.customerName}</Text>
+            </View>
+          )}
+        </View>
+        <View style={styles.receiptDetailsRight}>
+          <Text style={styles.receiptNumber}>Receipt #: {receipt.receiptNumber}</Text>
+          <Text style={styles.receiptDate}>Date: {formatDate(receipt.createdAt)}</Text>
+          {receipt.paymentStatus && (
+            <View style={[styles.paymentStatusBadge, { backgroundColor: getPaymentStatusColor(receipt.paymentStatus) }]}>
+              <Text style={styles.paymentStatusText}>{getPaymentStatusLabel(receipt.paymentStatus)}</Text>
+            </View>
+          )}
+        </View>
       </View>
 
-      {/* Items */}
-      <View style={styles.itemsContainer}>
+      {/* Items Table Header */}
+      <View style={styles.tableHeader}>
+        <Text style={[styles.tableHeaderText, styles.colQty]}>QTY</Text>
+        <Text style={[styles.tableHeaderText, styles.colDescription]}>Description</Text>
+        <Text style={[styles.tableHeaderText, styles.colUnitPrice]}>Unit Price</Text>
+        <Text style={[styles.tableHeaderText, styles.colAmount]}>Amount</Text>
+      </View>
+
+      {/* Items Table Body */}
+      <View style={styles.tableBody}>
         {receipt.items.map((item, index) => (
-          <View key={index} style={styles.itemRow}>
-            <View style={styles.itemInfo}>
-              <Text style={styles.itemDescription}>{item.description}</Text>
-              <Text style={styles.itemDetails}>
-                {item.quantity} × {formatCurrency(item.price)} = {formatCurrency(item.quantity * item.price)}
-              </Text>
-            </View>
-            <Text style={styles.itemTotal}>{formatCurrency(item.quantity * item.price)}</Text>
+          <View key={index} style={styles.tableRow}>
+            <Text style={[styles.tableCell, styles.colQty]}>
+              {item.quantity % 1 === 0 ? item.quantity.toString() : item.quantity.toFixed(2)}
+            </Text>
+            <Text style={[styles.tableCell, styles.colDescription]}>{item.description}</Text>
+            <Text style={[styles.tableCell, styles.colUnitPrice]}>{formatCurrency(item.price)}</Text>
+            <Text style={[styles.tableCell, styles.colAmount]}>{formatCurrency(item.quantity * item.price)}</Text>
           </View>
         ))}
       </View>
 
-      {/* Total */}
-      <View style={styles.totalContainer}>
-        <Text style={styles.totalLabel}>TOTAL</Text>
-        <Text style={styles.totalAmount}>{formatCurrency(receipt.total)}</Text>
+      {/* Summary Section */}
+      <View style={styles.summary}>
+        <View style={styles.summaryRow}>
+          <Text style={styles.summaryLabel}>Subtotal:</Text>
+          <Text style={styles.summaryValue}>{formatCurrency(receipt.total)}</Text>
+        </View>
+        <View style={[styles.summaryRow, styles.totalRow]}>
+          <Text style={styles.totalLabel}>Total:</Text>
+          <Text style={styles.totalValue}>{formatCurrency(receipt.total)}</Text>
+        </View>
       </View>
+
+      {/* Notes Section - Temporarily Disabled */}
+      {/* {receipt.notes && (
+        <View style={styles.notesSection}>
+          <Text style={styles.notesLabel}>Notes</Text>
+          <Text style={styles.notesText}>{receipt.notes}</Text>
+        </View>
+      )} */}
 
       {/* Footer */}
       <View style={styles.footer}>
@@ -68,113 +130,237 @@ export default function ReceiptView({ receipt, businessProfile }: ReceiptViewPro
 const styles = StyleSheet.create({
   container: {
     backgroundColor: '#FFFFFF',
-    padding: 24,
+    padding: 16,
     borderRadius: 8,
-    borderWidth: 2,
-    borderColor: '#000000',
-    maxWidth: 400,
     width: '100%',
+    alignSelf: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
   },
-  logoPlaceholder: {
-    alignItems: 'center',
-    marginBottom: 16,
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 24,
+    paddingBottom: 16,
+    borderBottomWidth: 2,
+    borderBottomColor: '#E5E7EB',
+  },
+  headerLeft: {
+    flex: 1,
+  },
+  headerRight: {
+    alignItems: 'flex-end',
+  },
+  businessName: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#111827',
+    marginBottom: 4,
+  },
+  businessAddress: {
+    fontSize: 12,
+    color: '#6B7280',
+    marginBottom: 2,
+  },
+  businessPhone: {
+    fontSize: 12,
+    color: '#6B7280',
+    marginBottom: 2,
+  },
+  businessCac: {
+    fontSize: 12,
+    color: '#6B7280',
   },
   logo: {
     width: 80,
     height: 80,
-    alignSelf: 'center',
-    marginBottom: 16,
     borderRadius: 8,
+    marginBottom: 8,
+    backgroundColor: '#F9FAFB',
   },
-  logoText: {
-    fontSize: 48,
-  },
-  businessInfo: {
+  logoPlaceholder: {
+    width: 80,
+    height: 80,
+    borderRadius: 8,
+    backgroundColor: '#F3F4F6',
+    justifyContent: 'center',
     alignItems: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: '#000000',
-    paddingBottom: 12,
-    marginBottom: 12,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    borderStyle: 'dashed',
   },
-  businessName: {
-    fontSize: 18,
+  logoPlaceholderText: {
+    fontSize: 12,
+    color: '#9CA3AF',
+  },
+  receiptTitle: {
+    fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 4,
-    color: '#000000',
+    color: '#14B8A6', // Secondary brand color
+    letterSpacing: 2,
   },
-  businessText: {
-    fontSize: 12,
-    color: '#000000',
-    marginTop: 2,
-  },
-  receiptDetails: {
-    alignItems: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: '#000000',
-    paddingBottom: 12,
-    marginBottom: 12,
-  },
-  receiptText: {
-    fontSize: 12,
-    color: '#000000',
-    marginTop: 2,
-  },
-  itemsContainer: {
-    borderBottomWidth: 1,
-    borderBottomColor: '#000000',
-    paddingBottom: 12,
-    marginBottom: 12,
-  },
-  itemRow: {
+  receiptDetailsRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    marginBottom: 20,
+  },
+  receiptDetailsLeft: {
+    flex: 1,
+  },
+  receiptDetailsRight: {
+    alignItems: 'flex-end',
+  },
+  billedToSection: {
     marginBottom: 8,
   },
-  itemInfo: {
-    flex: 1,
-    marginRight: 8,
-  },
-  itemDescription: {
+  billedToLabel: {
     fontSize: 12,
-    fontWeight: '500',
-    color: '#000000',
-    marginBottom: 2,
+    fontWeight: '600',
+    color: '#14B8A6',
+    marginBottom: 4,
   },
-  itemDetails: {
+  customerName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#111827',
+  },
+  receiptNumber: {
+    fontSize: 12,
+    color: '#6B7280',
+    marginBottom: 4,
+  },
+  receiptDate: {
+    fontSize: 12,
+    color: '#6B7280',
+    marginBottom: 8,
+  },
+  paymentStatusBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginTop: 4,
+  },
+  paymentStatusText: {
     fontSize: 11,
-    color: '#666666',
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
-  itemTotal: {
+  tableHeader: {
+    flexDirection: 'row',
+    backgroundColor: '#14B8A6',
+    paddingVertical: 10,
+    paddingHorizontal: 4,
+    borderRadius: 4,
+    marginBottom: 8,
+  },
+  tableHeaderText: {
     fontSize: 12,
-    fontWeight: '500',
-    color: '#000000',
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
-  totalContainer: {
+  tableBody: {
+    marginBottom: 16,
+  },
+  tableRow: {
+    flexDirection: 'row',
+    paddingVertical: 10,
+    paddingHorizontal: 4,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
+  },
+  tableCell: {
+    fontSize: 13,
+    color: '#374151',
+  },
+  colQty: {
+    width: 60,
+    textAlign: 'left',
+    paddingRight: 4,
+  },
+  colDescription: {
+    flex: 1,
+    paddingHorizontal: 4,
+  },
+  colUnitPrice: {
+    width: 90,
+    textAlign: 'right',
+    paddingRight: 4,
+  },
+  colAmount: {
+    width: 90,
+    textAlign: 'right',
+    fontWeight: '600',
+  },
+  summary: {
+    alignItems: 'flex-end',
+    marginBottom: 16,
+    paddingTop: 16,
+    borderTopWidth: 2,
+    borderTopColor: '#E5E7EB',
+  },
+  summaryRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    borderBottomWidth: 1,
-    borderBottomColor: '#000000',
-    paddingBottom: 12,
-    marginBottom: 12,
+    width: '100%',
+    marginBottom: 8,
+  },
+  summaryLabel: {
+    fontSize: 14,
+    color: '#6B7280',
+  },
+  summaryValue: {
+    fontSize: 14,
+    color: '#374151',
+    fontWeight: '600',
+  },
+  totalRow: {
+    marginTop: 8,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#D1D5DB',
   },
   totalLabel: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: 'bold',
-    color: '#000000',
+    color: '#111827',
   },
-  totalAmount: {
-    fontSize: 14,
+  totalValue: {
+    fontSize: 18,
     fontWeight: 'bold',
-    color: '#000000',
+    color: '#2563EB', // Primary brand color
+  },
+  notesSection: {
+    marginTop: 16,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
+  },
+  notesLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#14B8A6',
+    marginBottom: 6,
+  },
+  notesText: {
+    fontSize: 13,
+    color: '#374151',
+    lineHeight: 20,
   },
   footer: {
     alignItems: 'center',
+    marginTop: 20,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
   },
   footerText: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '600',
-    color: '#000000',
+    color: '#6B7280',
+    fontStyle: 'italic',
   },
 });
-

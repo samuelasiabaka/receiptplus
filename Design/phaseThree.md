@@ -36,3 +36,15 @@ STRICT RULES:
 - No business logic in controllers
 - Use DTOs
 - Explain security decisions
+
+
+[ApiController]
+[Route("api/receipts")]
+public class ReceiptsController : ControllerBase
+{
+    [HttpGet]
+    public IActionResult GetReceipts()
+    {
+        return Ok();
+    }
+}
