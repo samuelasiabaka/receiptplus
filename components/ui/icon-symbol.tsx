@@ -26,6 +26,10 @@ const MAPPING = {
   'square.and.arrow.up': 'share',
   'pencil': 'edit',
   'photo': 'image',
+  'cube.box.fill': 'inventory-2',
+  'magnifyingglass': 'search',
+  'xmark.circle.fill': 'cancel',
+  'xmark': 'close',
 } as IconMapping;
 
 /**
