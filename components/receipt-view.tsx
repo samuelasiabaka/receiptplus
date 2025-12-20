@@ -11,8 +11,19 @@ interface ReceiptViewProps {
 export default function ReceiptView({ receipt, businessProfile }: ReceiptViewProps) {
   return (
     <View style={styles.container}>
+      {/* Watermark Logo Background */}
+      {businessProfile.logoUri && (
+        <View style={styles.watermarkContainer}>
+          <Image
+            source={{ uri: businessProfile.logoUri }}
+            style={styles.watermarkLogo}
+            resizeMode="contain"
+          />
+        </View>
+      )}
+      
       {/* Header Section */}
-      <View style={styles.header}>
+      <View style={[styles.header, styles.contentLayer]}>
         <View style={styles.headerLeft}>
           <Text style={styles.businessName}>{businessProfile.name}</Text>
           {businessProfile.address && <Text style={styles.businessAddress}>{businessProfile.address}</Text>}
@@ -34,7 +45,7 @@ export default function ReceiptView({ receipt, businessProfile }: ReceiptViewPro
       </View>
 
       {/* Receipt Details */}
-      <View style={styles.receiptDetailsRow}>
+      <View style={[styles.receiptDetailsRow, styles.contentLayer]}>
         <View style={styles.receiptDetailsLeft}>
           <View style={styles.billedToSection}>
             <Text style={styles.billedToLabel}>Billed To</Text>
@@ -51,7 +62,7 @@ export default function ReceiptView({ receipt, businessProfile }: ReceiptViewPro
       </View>
 
       {/* Items Table Header */}
-      <View style={styles.tableHeader}>
+      <View style={[styles.tableHeader, styles.contentLayer]}>
         <Text style={[styles.tableHeaderText, styles.colQty]}>QTY</Text>
         <Text style={[styles.tableHeaderText, styles.colDescription]}>Description</Text>
         <Text style={[styles.tableHeaderText, styles.colUnitPrice]}>Unit Price</Text>
@@ -59,7 +70,7 @@ export default function ReceiptView({ receipt, businessProfile }: ReceiptViewPro
       </View>
 
       {/* Items Table Body */}
-      <View style={styles.tableBody}>
+      <View style={[styles.tableBody, styles.contentLayer]}>
         {receipt.items.map((item, index) => (
           <View key={index} style={styles.tableRow}>
             <Text style={[styles.tableCell, styles.colQty]}>
@@ -73,7 +84,7 @@ export default function ReceiptView({ receipt, businessProfile }: ReceiptViewPro
       </View>
 
       {/* Summary Section */}
-      <View style={styles.summary}>
+      <View style={[styles.summary, styles.contentLayer]}>
         <View style={styles.summaryRow}>
           <Text style={styles.summaryLabel}>Subtotal:</Text>
           <Text style={styles.summaryValue}>{formatCurrency(receipt.total)}</Text>
@@ -93,7 +104,7 @@ export default function ReceiptView({ receipt, businessProfile }: ReceiptViewPro
       )} */}
 
       {/* Footer */}
-      <View style={styles.footer}>
+      <View style={[styles.footer, styles.contentLayer]}>
         <Text style={styles.footerText}>
           {businessProfile.customFooter || 'Thank you for your patronage!'}
         </Text>
@@ -114,6 +125,28 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 4,
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  watermarkContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 0,
+    pointerEvents: 'none',
+  },
+  watermarkLogo: {
+    width: 300,
+    height: 300,
+    opacity: 0.1,
+  },
+  contentLayer: {
+    position: 'relative',
+    zIndex: 1,
   },
   header: {
     flexDirection: 'row',
