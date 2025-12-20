@@ -24,6 +24,8 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>
+        <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack.Screen name="onboarding" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="create-receipt" options={{ headerShown: false, presentation: 'modal' }} />
         <Stack.Screen name="receipt-preview" options={{ headerShown: false, presentation: 'modal' }} />
