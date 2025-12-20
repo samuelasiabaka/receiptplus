@@ -1,3 +1,4 @@
+import LoadingView from '@/components/loading-view';
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Alert, Modal, KeyboardAvoidingView, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -171,9 +172,7 @@ export default function InventoryScreen() {
       {/* Content */}
       <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
         {loading ? (
-          <View style={styles.emptyContainer}>
-            <Text style={[styles.emptyText, { color: colors.text }]}>Loading...</Text>
-          </View>
+          <LoadingView message="Loading inventory..." />
         ) : items.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyEmoji}>📦</Text>

@@ -1,7 +1,7 @@
-import React from 'react';
-import { View, Text, StyleSheet, Image } from 'react-native';
-import type { Receipt, BusinessProfile } from '@/models/types';
+import type { BusinessProfile, Receipt } from '@/models/types';
 import { formatCurrency, formatDate } from '@/utils/receipt';
+import React from 'react';
+import { Image, StyleSheet, Text, View } from 'react-native';
 
 interface ReceiptViewProps {
   receipt: Receipt;
@@ -65,7 +65,7 @@ export default function ReceiptView({ receipt, businessProfile }: ReceiptViewPro
             <Text style={[styles.tableCell, styles.colQty]}>
               {item.quantity % 1 === 0 ? item.quantity.toString() : item.quantity.toFixed(2)}
             </Text>
-            <Text style={[styles.tableCell, styles.colDescription]}>{item.description}</Text>
+            <Text style={[styles.tableCell, styles.colDescription]} numberOfLines={2} ellipsizeMode="tail">{item.description}</Text>
             <Text style={[styles.tableCell, styles.colUnitPrice]}>{formatCurrency(item.price)}</Text>
             <Text style={[styles.tableCell, styles.colAmount]}>{formatCurrency(item.quantity * item.price)}</Text>
           </View>
@@ -251,21 +251,21 @@ const styles = StyleSheet.create({
     color: '#374151',
   },
   colQty: {
-    width: 60,
+    flex: 0.5,
     textAlign: 'left',
     paddingRight: 4,
   },
   colDescription: {
-    flex: 1,
-    paddingHorizontal: 4,
+    flex: 1.8,
+    paddingHorizontal: 8,
   },
   colUnitPrice: {
-    width: 90,
+    flex: 1.2,
     textAlign: 'right',
     paddingRight: 4,
   },
   colAmount: {
-    width: 90,
+    flex: 1.2,
     textAlign: 'right',
     fontWeight: '600',
   },

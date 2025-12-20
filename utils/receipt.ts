@@ -14,7 +14,11 @@ export const generateReceiptNumber = (businessName: string): string => {
 };
 
 export const formatCurrency = (amount: number): string => {
-  return `₦${amount.toFixed(2)}`;
+  // Remove .00 if it's a whole number, otherwise show 2 decimal places
+  if (amount % 1 === 0) {
+    return `₦${amount.toLocaleString()}`;
+  }
+  return `₦${amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 };
 
 export const formatDate = (dateString: string): string => {

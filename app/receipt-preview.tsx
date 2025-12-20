@@ -1,4 +1,5 @@
 import ReceiptView from '@/components/receipt-view';
+import LoadingView from '@/components/loading-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -114,12 +115,7 @@ export default function ReceiptPreviewScreen() {
   };
 
   if (loading) {
-    return (
-      <View style={[styles.container, styles.centerContent, { backgroundColor: colors.background }]}>
-        <ActivityIndicator size="large" color={colors.tint} />
-        <Text style={[styles.loadingText, { color: colors.text }]}>Loading receipt...</Text>
-      </View>
-    );
+    return <LoadingView message="Loading receipt..." />;
   }
 
   if (!receipt || !businessProfile) {

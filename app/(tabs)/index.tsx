@@ -1,3 +1,4 @@
+import LoadingView from '@/components/loading-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -102,9 +103,7 @@ export default function HomeScreen() {
       {/* Content */}
       <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
         {loading ? (
-          <View style={styles.emptyContainer}>
-            <Text style={[styles.emptyText, { color: colors.text }]}>Loading...</Text>
-          </View>
+          <LoadingView message="Loading receipts..." />
         ) : receipts.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyEmoji}>📋</Text>

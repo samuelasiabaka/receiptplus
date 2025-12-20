@@ -80,7 +80,7 @@ export default function CreateReceiptScreen() {
             setEditingReceiptId(receiptId);
             setItems(receipt.items || []);
             setCustomerName(receipt.customerName || '');
-            setPaymentStatus(receipt.paymentStatus || 'not_paid');
+            setCustomerPhone(receipt.customerPhone || '');
             setNotes(receipt.notes || '');
           }
         }
@@ -124,6 +124,11 @@ export default function CreateReceiptScreen() {
   };
 
   const handleGenerateReceipt = async () => {
+    if (!customerName.trim()) {
+      Alert.alert('Error', 'Customer name is required');
+      return;
+    }
+
     const validItems = items.filter((item) => item.description.trim() && item.price > 0);
     
     if (validItems.length === 0) {
@@ -328,11 +333,17 @@ export default function CreateReceiptScreen() {
             </View>
 
             <TouchableOpacity
-              style={styles.addButton}
+              style={[
+                styles.addButton,
+                (!description.trim() || !price || parseFloat(price) <= 0) && styles.addButtonDisabled
+              ]}
               onPress={handleAddItem}
-              disabled={!description.trim() || !price}
+              disabled={!description.trim() || !price || parseFloat(price) <= 0}
             >
-              <Text style={styles.addButtonText}>Add Item</Text>
+              <Text style={[
+                styles.addButtonText,
+                (!description.trim() || !price || parseFloat(price) <= 0) && styles.addButtonTextDisabled
+              ]}>Add Item</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -419,11 +430,17 @@ export default function CreateReceiptScreen() {
       {/* Action Buttons */}
       <View style={[styles.footer, { borderTopColor: colors.tabIconDefault, backgroundColor: colors.background }]}>
         <TouchableOpacity
-          style={styles.generateButton}
+          style={[
+            styles.generateButton,
+            (!customerName.trim() || items.length === 0 || total === 0) && styles.generateButtonDisabled
+          ]}
           onPress={handleGenerateReceipt}
-          disabled={items.length === 0 || total === 0}
+          disabled={!customerName.trim() || items.length === 0 || total === 0}
         >
-          <Text style={styles.generateButtonText}>
+          <Text style={[
+            styles.generateButtonText,
+            (!customerName.trim() || items.length === 0 || total === 0) && styles.generateButtonTextDisabled
+          ]}>
             {editingReceiptId ? 'Update Receipt' : 'Generate Receipt'}
           </Text>
         </TouchableOpacity>
@@ -499,10 +516,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#2563EB', // Brand Primary - Tech Blue
   },
+  addButtonDisabled: {
+    backgroundColor: '#9CA3AF',
+    opacity: 0.6,
+  },
   addButtonText: {
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
+  },
+  addButtonTextDisabled: {
+    color: '#FFFFFF',
+    opacity: 0.7,
   },
   itemsList: {
     gap: 8,
@@ -576,6 +601,12 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
+  generateButtonDisabled: {
+    backgroundColor: '#9CA3AF',
+    opacity: 0.6,
+    shadowOpacity: 0,
+    elevation: 0,
+  },
   generateButtonText: {
     color: '#FFFFFF',
     fontSize: 16,
@@ -583,6 +614,10 @@ const styles = StyleSheet.create({
     textShadowColor: 'rgba(0, 0, 0, 0.1)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2,
+  },
+  generateButtonTextDisabled: {
+    color: '#FFFFFF',
+    opacity: 0.7,
   },
   cancelButton: {
     padding: 16,

@@ -1,3 +1,4 @@
+import LoadingView from '@/components/loading-view';
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Alert, Image, KeyboardAvoidingView, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -116,11 +117,7 @@ export default function BusinessProfileScreen() {
   };
 
   if (loading) {
-    return (
-      <View style={[styles.container, styles.centerContent, { backgroundColor: colors.background }]}>
-        <Text style={[styles.loadingText, { color: colors.text }]}>Loading...</Text>
-      </View>
-    );
+    return <LoadingView message="Loading profile..." />;
   }
 
   return (
@@ -160,6 +157,9 @@ export default function BusinessProfileScreen() {
               </>
             )}
           </TouchableOpacity>
+          <Text style={[styles.helperText, { color: colors.tabIconDefault }]}>
+            Recommended: Square image (1:1), max 2MB. Formats: PNG, JPEG, GIF, WebP
+          </Text>
           {logoUri && (
             <TouchableOpacity
               onPress={() => setLogoUri(null)}
@@ -257,9 +257,12 @@ export default function BusinessProfileScreen() {
       {/* Action Buttons */}
       <View style={[styles.footer, { borderTopColor: colors.tabIconDefault, backgroundColor: colors.background }]}>
         <TouchableOpacity
-          style={[styles.saveButton, { backgroundColor: colors.tint }]}
+          style={[
+            styles.saveButton,
+            { backgroundColor: (!businessName.trim() || !phone.trim() || saving) ? colors.tabIconDefault : colors.tint }
+          ]}
           onPress={handleSave}
-          disabled={saving}
+          disabled={!businessName.trim() || !phone.trim() || saving}
         >
           <Text style={styles.saveButtonText}>{saving ? 'Saving...' : 'Save Profile'}</Text>
         </TouchableOpacity>
