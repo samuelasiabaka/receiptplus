@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Alert, KeyboardAvoidingView, Platform, Animated } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -9,6 +9,82 @@ import { saveReceipt, updateReceipt, getBusinessProfile, getAllInventoryItems, s
 import { initDb } from '@/lib/database';
 import type { ReceiptItem, InventoryItem, Receipt } from '@/models/types';
 import { generateReceiptNumber, formatCurrency } from '@/utils/receipt';
+
+// Animated Item Card Component
+function AnimatedItemCard({
+  item,
+  index,
+  colors,
+  formatCurrency,
+  onRemove,
+}: {
+  item: ReceiptItem;
+  index: number;
+  colors: any;
+  formatCurrency: (amount: number) => string;
+  onRemove: () => void;
+}) {
+  const cardAnim = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    Animated.spring(cardAnim, {
+      toValue: 1,
+      tension: 50,
+      friction: 7,
+      delay: index * 30,
+      useNativeDriver: true,
+    }).start();
+  }, []);
+
+  const handlePressIn = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 0.98,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const translateX = cardAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [-20, 0],
+  });
+
+  const opacity = cardAnim;
+
+  return (
+    <Animated.View
+      style={{
+        opacity,
+        transform: [{ translateX }, { scale: scaleAnim }],
+      }}
+    >
+      <View style={styles.itemCard}>
+        <View style={styles.itemCardContent}>
+          <Text style={[styles.itemDescription, { color: colors.text }]}>{item.description}</Text>
+          <Text style={[styles.itemDetails, { color: colors.tabIconDefault }]}>
+            {item.quantity} × {formatCurrency(item.price)} = {formatCurrency(item.quantity * item.price)}
+          </Text>
+        </View>
+        <TouchableOpacity
+          onPress={onRemove}
+          onPressIn={handlePressIn}
+          onPressOut={handlePressOut}
+          style={styles.deleteItemButton}
+          activeOpacity={0.7}
+        >
+          <IconSymbol size={20} name="trash.fill" color="#EF4444" />
+        </TouchableOpacity>
+      </View>
+    </Animated.View>
+  );
+}
 
 export default function CreateReceiptScreen() {
   const router = useRouter();
@@ -224,9 +300,9 @@ export default function CreateReceiptScreen() {
       keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
     >
       {/* Header */}
-      <View style={[styles.header, { borderBottomColor: colors.tabIconDefault, paddingTop: insets.top + 16 }]}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <IconSymbol size={24} name="chevron.left" color={colors.text} />
+      <View style={[styles.header, { backgroundColor: '#FFFFFF', borderBottomColor: '#E5E7EB', paddingTop: insets.top + 16 }]}>
+        <TouchableOpacity onPress={() => router.back()} style={[styles.backButton, { backgroundColor: '#F3F4F6' }]}>
+          <IconSymbol size={20} name="chevron.left" color={colors.text} />
         </TouchableOpacity>
         <Text style={[styles.title, { color: colors.text }]}>
           {editingReceiptId ? 'Edit Receipt' : 'Create Receipt'}
@@ -241,19 +317,19 @@ export default function CreateReceiptScreen() {
         keyboardShouldPersistTaps="handled"
       >
         {/* Customer Information */}
-        <View style={[styles.inputSection, { backgroundColor: colors.background, borderColor: colors.tabIconDefault }]}>
+        <View style={styles.inputSection}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>Customer Information</Text>
           <TextInput
-            style={[styles.input, { backgroundColor: colors.background, borderColor: colors.tabIconDefault, color: colors.text }]}
+            style={[styles.input, { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', color: colors.text }]}
             placeholder="Customer Name *"
-            placeholderTextColor={colors.tabIconDefault}
+            placeholderTextColor="#9CA3AF"
             value={customerName}
             onChangeText={setCustomerName}
           />
           <TextInput
-            style={[styles.input, { backgroundColor: colors.background, borderColor: colors.tabIconDefault, color: colors.text, marginTop: 12 }]}
+            style={[styles.input, { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', color: colors.text, marginTop: 12 }]}
             placeholder="Customer Phone (Optional)"
-            placeholderTextColor={colors.tabIconDefault}
+            placeholderTextColor="#9CA3AF"
             keyboardType="phone-pad"
             value={customerPhone}
             onChangeText={setCustomerPhone}
@@ -261,7 +337,7 @@ export default function CreateReceiptScreen() {
         </View>
 
         {/* Item Input Section */}
-        <View style={[styles.inputSection, { backgroundColor: colors.background, borderColor: colors.tabIconDefault }]}>
+        <View style={styles.inputSection}>
           <View style={styles.sectionHeader}>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>Add Items</Text>
             <TouchableOpacity
@@ -276,14 +352,14 @@ export default function CreateReceiptScreen() {
           <View style={styles.inputGroup}>
             <View style={styles.inventorySearchContainer}>
               <TextInput
-                style={[styles.input, styles.inventorySearchInput, { backgroundColor: colors.background, borderColor: colors.tabIconDefault, color: colors.text }]}
+                style={[styles.input, styles.inventorySearchInput, { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', color: colors.text }]}
                 placeholder="Search inventory (type 2+ letters)..."
-                placeholderTextColor={colors.tabIconDefault}
+                placeholderTextColor="#9CA3AF"
                 value={inventorySearch}
                 onChangeText={setInventorySearch}
               />
               {showInventoryDropdown && filteredInventory.length > 0 && (
-                <View style={[styles.inventoryDropdown, { backgroundColor: colors.background, borderColor: colors.tabIconDefault }]}>
+                <View style={[styles.inventoryDropdown, { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB' }]}>
                   {filteredInventory.map((item) => (
                     <TouchableOpacity
                       key={item.id?.toString() || ''}
@@ -303,9 +379,9 @@ export default function CreateReceiptScreen() {
               )}
             </View>
             <TextInput
-              style={[styles.input, { backgroundColor: colors.background, borderColor: colors.tabIconDefault, color: colors.text }]}
+              style={[styles.input, { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', color: colors.text }]}
               placeholder="Item description"
-              placeholderTextColor={colors.tabIconDefault}
+              placeholderTextColor="#9CA3AF"
               value={description}
               onChangeText={(text) => {
                 setDescription(text);
@@ -315,17 +391,17 @@ export default function CreateReceiptScreen() {
 
             <View style={styles.rowInputs}>
               <TextInput
-                style={[styles.input, styles.halfInput, { backgroundColor: colors.background, borderColor: colors.tabIconDefault, color: colors.text }]}
+                style={[styles.input, styles.halfInput, { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', color: colors.text }]}
                 placeholder="Quantity"
-                placeholderTextColor={colors.tabIconDefault}
+                placeholderTextColor="#9CA3AF"
                 keyboardType="numeric"
                 value={quantity}
                 onChangeText={setQuantity}
               />
               <TextInput
-                style={[styles.input, styles.halfInput, { backgroundColor: colors.background, borderColor: colors.tabIconDefault, color: colors.text }]}
+                style={[styles.input, styles.halfInput, { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', color: colors.text }]}
                 placeholder="Rate"
-                placeholderTextColor={colors.tabIconDefault}
+                placeholderTextColor="#9CA3AF"
                 keyboardType="decimal-pad"
                 value={price}
                 onChangeText={setPrice}
@@ -354,20 +430,14 @@ export default function CreateReceiptScreen() {
             {items
               .filter((item) => item.description.trim() && item.price > 0)
               .map((item, index) => (
-                <View key={index} style={[styles.itemCard, { backgroundColor: colors.background, borderColor: colors.tabIconDefault }]}>
-                  <View style={styles.itemCardContent}>
-                    <Text style={[styles.itemDescription, { color: colors.text }]}>{item.description}</Text>
-                    <Text style={[styles.itemDetails, { color: colors.tabIconDefault }]}>
-                      {item.quantity} × {formatCurrency(item.price)} = {formatCurrency(item.quantity * item.price)}
-                    </Text>
-                  </View>
-                  <TouchableOpacity
-                    onPress={() => handleRemoveItem(index)}
-                    style={styles.deleteItemButton}
-                  >
-                    <IconSymbol size={20} name="trash.fill" color="#FF3B30" />
-                  </TouchableOpacity>
-                </View>
+                <AnimatedItemCard
+                  key={index}
+                  item={item}
+                  index={index}
+                  colors={colors}
+                  formatCurrency={formatCurrency}
+                  onRemove={() => handleRemoveItem(index)}
+                />
               ))}
           </View>
         )}
@@ -414,7 +484,7 @@ export default function CreateReceiptScreen() {
 
         {/* Total Summary */}
         {items.length > 0 && (
-          <View style={[styles.totalSection, { backgroundColor: colors.background, borderColor: colors.tabIconDefault }]}>
+          <View style={styles.totalSection}>
             <View style={styles.totalRow}>
               <Text style={[styles.totalLabel, { color: colors.text }]}>Subtotal:</Text>
               <Text style={[styles.totalValue, { color: colors.text }]}>{formatCurrency(total)}</Text>
@@ -428,7 +498,7 @@ export default function CreateReceiptScreen() {
       </ScrollView>
 
       {/* Action Buttons */}
-      <View style={[styles.footer, { borderTopColor: colors.tabIconDefault, backgroundColor: colors.background }]}>
+      <View style={[styles.footer, { backgroundColor: '#FFFFFF', borderTopColor: '#E5E7EB' }]}>
         <TouchableOpacity
           style={[
             styles.generateButton,
@@ -436,6 +506,7 @@ export default function CreateReceiptScreen() {
           ]}
           onPress={handleGenerateReceipt}
           disabled={!customerName.trim() || items.length === 0 || total === 0}
+          activeOpacity={0.8}
         >
           <Text style={[
             styles.generateButtonText,
@@ -445,8 +516,9 @@ export default function CreateReceiptScreen() {
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.cancelButton, { backgroundColor: colors.background, borderColor: colors.tabIconDefault }]}
+          style={[styles.cancelButton, { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB' }]}
           onPress={() => router.back()}
+          activeOpacity={0.7}
         >
           <Text style={[styles.cancelButtonText, { color: colors.text }]}>Cancel</Text>
         </TouchableOpacity>
@@ -462,46 +534,66 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
+    paddingHorizontal: 20,
+    paddingBottom: 16,
     borderBottomWidth: 1,
     gap: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
   },
   backButton: {
-    padding: 4,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: '700',
     flex: 1,
+    letterSpacing: -0.3,
   },
   placeholder: {
-    width: 32,
+    width: 40,
   },
   content: {
     flex: 1,
   },
   contentContainer: {
-    padding: 16,
+    padding: 20,
   },
   inputSection: {
-    padding: 16,
-    borderRadius: 8,
+    backgroundColor: '#FFFFFF',
+    padding: 20,
+    borderRadius: 16,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
     borderWidth: 1,
-    marginBottom: 24,
+    borderColor: '#F3F4F6',
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 18,
+    fontWeight: '700',
     marginBottom: 16,
+    letterSpacing: -0.2,
   },
   inputGroup: {
-    gap: 12,
+    gap: 14,
   },
   input: {
-    borderWidth: 1,
-    borderRadius: 8,
-    padding: 12,
+    borderWidth: 1.5,
+    borderRadius: 12,
+    padding: 16,
     fontSize: 16,
+    backgroundColor: '#FFFFFF',
   },
   rowInputs: {
     flexDirection: 'row',
@@ -511,35 +603,49 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   addButton: {
-    padding: 12,
-    borderRadius: 8,
+    padding: 16,
+    borderRadius: 12,
     alignItems: 'center',
-    backgroundColor: '#2563EB', // Brand Primary - Tech Blue
+    backgroundColor: '#2563EB',
+    shadowColor: '#2563EB',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   addButtonDisabled: {
-    backgroundColor: '#9CA3AF',
-    opacity: 0.6,
+    backgroundColor: '#D1D5DB',
+    shadowOpacity: 0,
+    elevation: 0,
   },
   addButtonText: {
     color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
+    letterSpacing: -0.2,
   },
   addButtonTextDisabled: {
     color: '#FFFFFF',
     opacity: 0.7,
   },
   itemsList: {
-    gap: 8,
+    gap: 12,
     marginBottom: 24,
   },
   itemCard: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 12,
-    borderRadius: 8,
+    padding: 16,
+    borderRadius: 12,
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
+    borderColor: '#F3F4F6',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 1,
   },
   itemCardContent: {
     flex: 1,
@@ -553,67 +659,89 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   deleteItemButton: {
-    padding: 8,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#FEF2F2',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   totalSection: {
-    padding: 16,
-    borderRadius: 8,
+    backgroundColor: '#FFFFFF',
+    padding: 20,
+    borderRadius: 16,
     borderWidth: 1,
-    gap: 8,
+    borderColor: '#F3F4F6',
+    gap: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
   },
   totalRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
   totalRowFinal: {
-    borderTopWidth: 1,
-    borderTopColor: '#E5E5E5',
-    paddingTop: 8,
+    borderTopWidth: 1.5,
+    borderTopColor: '#E5E7EB',
+    paddingTop: 12,
     marginTop: 8,
   },
   totalLabel: {
     fontSize: 16,
+    color: '#6B7280',
   },
   totalValue: {
     fontSize: 16,
+    fontWeight: '600',
+    color: '#111827',
   },
   totalLabelFinal: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#111827',
+    letterSpacing: -0.3,
   },
   totalValueFinal: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#2563EB',
+    letterSpacing: -0.3,
   },
   footer: {
-    padding: 16,
+    padding: 20,
+    paddingBottom: 24,
     borderTopWidth: 1,
     gap: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 5,
   },
   generateButton: {
-    padding: 16,
-    borderRadius: 8,
+    padding: 18,
+    borderRadius: 14,
     alignItems: 'center',
-    backgroundColor: '#2563EB', // Brand Primary - Tech Blue
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    backgroundColor: '#2563EB',
+    shadowColor: '#2563EB',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
   generateButtonDisabled: {
-    backgroundColor: '#9CA3AF',
-    opacity: 0.6,
+    backgroundColor: '#D1D5DB',
     shadowOpacity: 0,
     elevation: 0,
   },
   generateButtonText: {
     color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
-    textShadowColor: 'rgba(0, 0, 0, 0.1)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
+    fontSize: 17,
+    fontWeight: '700',
+    letterSpacing: -0.2,
   },
   generateButtonTextDisabled: {
     color: '#FFFFFF',
@@ -621,13 +749,14 @@ const styles = StyleSheet.create({
   },
   cancelButton: {
     padding: 16,
-    borderRadius: 8,
+    borderRadius: 12,
     alignItems: 'center',
-    borderWidth: 1,
+    borderWidth: 1.5,
   },
   cancelButtonText: {
     fontSize: 16,
     fontWeight: '600',
+    letterSpacing: -0.2,
   },
   statusButtons: {
     flexDirection: 'row',
@@ -683,14 +812,14 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     maxHeight: 200,
-    borderRadius: 8,
+    borderRadius: 12,
     borderWidth: 1,
-    marginTop: 4,
+    marginTop: 6,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 8,
     zIndex: 1000,
   },
   inventoryDropdownList: {

@@ -8,9 +8,92 @@ import type { Receipt } from '@/models/types';
 import { formatCurrency, formatDate } from '@/utils/receipt';
 import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
-import React, { useCallback, useEffect, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Alert, Animated, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+// Animated Receipt Card Component
+function AnimatedReceiptCard({
+  receipt,
+  index,
+  colors,
+  formatDate,
+  formatCurrency,
+  onPress,
+  onDelete,
+}: {
+  receipt: Receipt;
+  index: number;
+  colors: any;
+  formatDate: (date: string) => string;
+  formatCurrency: (amount: number) => string;
+  onPress: () => void;
+  onDelete: (e: any) => void;
+}) {
+  const cardAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(cardAnim, {
+      toValue: 1,
+      duration: 300,
+      delay: index * 50,
+      useNativeDriver: true,
+    }).start();
+  }, []);
+
+  const translateY = cardAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [20, 0],
+  });
+
+  const opacity = cardAnim;
+
+  return (
+    <Animated.View
+      style={{
+        opacity,
+        transform: [{ translateY }],
+      }}
+    >
+      <TouchableOpacity
+        style={styles.receiptCard}
+        onPress={onPress}
+        activeOpacity={0.7}
+      >
+        <View style={styles.receiptCardHeader}>
+          <View style={styles.receiptCardInfo}>
+            <Text style={[styles.receiptNumber, { color: colors.text }]}>{receipt.receiptNumber}</Text>
+            <Text style={[styles.receiptDate, { color: colors.tabIconDefault }]}>
+              {formatDate(receipt.createdAt)}
+            </Text>
+          </View>
+          <View style={[styles.totalBadge, { backgroundColor: `${colors.tint}15` }]}>
+            <Text style={[styles.receiptTotal, { color: colors.tint }]}>
+              {formatCurrency(receipt.total)}
+            </Text>
+          </View>
+        </View>
+        <View style={styles.receiptCardFooter}>
+          <View style={[styles.itemsBadge, { backgroundColor: '#F3F4F6' }]}>
+            <IconSymbol size={14} name="doc.text.fill" color={colors.tabIconDefault} />
+            <Text style={[styles.receiptItemsCount, { color: colors.tabIconDefault }]}>
+              {receipt.items.length} item{receipt.items.length !== 1 ? 's' : ''}
+            </Text>
+          </View>
+          {receipt.id && (
+            <TouchableOpacity
+              onPress={onDelete}
+              style={[styles.deleteButton, { backgroundColor: '#FEF2F2' }]}
+              activeOpacity={0.7}
+            >
+              <IconSymbol size={16} name="trash.fill" color="#EF4444" />
+            </TouchableOpacity>
+          )}
+        </View>
+      </TouchableOpacity>
+    </Animated.View>
+  );
+}
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -18,6 +101,7 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const [receipts, setReceipts] = useState<Receipt[]>([]);
   const [loading, setLoading] = useState(true);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
 
   const loadReceipts = async () => {
     try {
@@ -25,6 +109,14 @@ export default function HomeScreen() {
       await initDb();
       const allReceipts = await getAllReceipts();
       setReceipts(allReceipts);
+      
+      // Animate fade-in
+      fadeAnim.setValue(0);
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
     } catch (error) {
       console.error('Error loading receipts:', error);
       Alert.alert('Error', 'Failed to load receipts');
@@ -88,76 +180,73 @@ export default function HomeScreen() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
-      <View style={[styles.header, { borderBottomColor: colors.tabIconDefault, paddingTop: insets.top + 16 }]}>
-        <Text style={[styles.title, { color: colors.text }]}>My Receipts</Text>
-        <View style={styles.headerButtons}>
-          <TouchableOpacity onPress={handleOpenInventory} style={styles.headerButton}>
-            <IconSymbol size={24} name="cube.box.fill" color={colors.text} />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={handleOpenSettings} style={styles.headerButton}>
-            <IconSymbol size={24} name="gearshape.fill" color={colors.text} />
-          </TouchableOpacity>
+      <View style={[styles.header, { backgroundColor: '#FFFFFF', paddingTop: insets.top + 16, borderBottomColor: '#E5E7EB' }]}>
+        <View style={styles.headerContent}>
+          <Text style={[styles.title, { color: colors.text }]}>My Receipts</Text>
+          <View style={styles.headerButtons}>
+            <TouchableOpacity 
+              onPress={handleOpenInventory} 
+              style={[styles.headerButton, { backgroundColor: '#F3F4F6' }]}
+            >
+              <IconSymbol size={20} name="cube.box.fill" color={colors.tint} />
+            </TouchableOpacity>
+            <TouchableOpacity 
+              onPress={handleOpenSettings} 
+              style={[styles.headerButton, { backgroundColor: '#F3F4F6' }]}
+            >
+              <IconSymbol size={20} name="gearshape.fill" color={colors.tint} />
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
 
       {/* Content */}
-      <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
+      <ScrollView 
+        style={styles.content} 
+        contentContainerStyle={styles.contentContainer}
+        showsVerticalScrollIndicator={false}
+      >
         {loading ? (
           <LoadingView message="Loading receipts..." />
         ) : receipts.length === 0 ? (
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyEmoji}>📋</Text>
+            <View style={styles.emptyIconContainer}>
+              <Text style={styles.emptyEmoji}>📋</Text>
+            </View>
             <Text style={[styles.emptyTitle, { color: colors.text }]}>No receipts yet</Text>
             <Text style={[styles.emptySubtitle, { color: colors.tabIconDefault }]}>
               Create your first receipt to get started
             </Text>
           </View>
         ) : (
-          <View style={styles.receiptsList}>
-            {receipts.map((receipt) => (
-              <TouchableOpacity
+          <Animated.View style={[styles.receiptsList, { opacity: fadeAnim }]}>
+            {receipts.map((receipt, index) => (
+              <AnimatedReceiptCard
                 key={receipt.id}
-                style={[styles.receiptCard, { backgroundColor: colors.background, borderColor: colors.tabIconDefault }]}
+                receipt={receipt}
+                index={index}
+                colors={colors}
+                formatDate={formatDate}
+                formatCurrency={formatCurrency}
                 onPress={() => receipt.id && handleReceiptPress(receipt.id)}
-              >
-                <View style={styles.receiptCardHeader}>
-                  <View style={styles.receiptCardInfo}>
-                    <Text style={[styles.receiptNumber, { color: colors.text }]}>{receipt.receiptNumber}</Text>
-                    <Text style={[styles.receiptDate, { color: colors.tabIconDefault }]}>
-                      {formatDate(receipt.createdAt)}
-                    </Text>
-                  </View>
-                  <Text style={[styles.receiptTotal, { color: colors.tint }]}>
-                    {formatCurrency(receipt.total)}
-                  </Text>
-                </View>
-                <View style={styles.receiptCardFooter}>
-                  <Text style={[styles.receiptItemsCount, { color: colors.tabIconDefault }]}>
-                    {receipt.items.length} item(s)
-                  </Text>
-                  {receipt.id && (
-                    <TouchableOpacity
-                      onPress={(e) => handleDeleteReceipt(receipt.id!, e)}
-                      style={styles.deleteButton}
-                    >
-                      <IconSymbol size={16} name="trash.fill" color={colors.tabIconDefault} />
-                    </TouchableOpacity>
-                  )}
-                </View>
-              </TouchableOpacity>
+                onDelete={(e) => receipt.id && handleDeleteReceipt(receipt.id!, e)}
+              />
             ))}
-          </View>
+          </Animated.View>
         )}
       </ScrollView>
 
       {/* Bottom Action Button */}
-      <View style={[styles.footer, { borderTopColor: colors.tabIconDefault, backgroundColor: colors.background }]}>
+      <View style={[styles.footer, { backgroundColor: '#FFFFFF', borderTopColor: '#E5E7EB' }]}>
         <TouchableOpacity
           style={styles.createButton}
           onPress={handleCreateReceipt}
+          activeOpacity={0.8}
         >
-          <IconSymbol size={20} name="plus" color="#FFFFFF" />
-          <Text style={styles.createButtonText}>Create Receipt</Text>
+          <View style={styles.createButtonContent}>
+            <IconSymbol size={22} name="plus" color="#FFFFFF" />
+            <Text style={styles.createButtonText}>Create Receipt</Text>
+          </View>
         </TouchableOpacity>
       </View>
     </View>
@@ -169,119 +258,179 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
+    borderBottomWidth: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  headerContent: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 16,
-    borderBottomWidth: 1,
+    paddingHorizontal: 20,
+    paddingBottom: 16,
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 28,
+    fontWeight: '700',
+    letterSpacing: -0.5,
   },
   headerButtons: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 10,
   },
   headerButton: {
-    padding: 8,
-  },
-  settingsButton: {
-    padding: 8,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   content: {
     flex: 1,
   },
   contentContainer: {
-    padding: 16,
+    padding: 20,
     flexGrow: 1,
   },
   emptyContainer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 48,
+    paddingVertical: 80,
+  },
+  emptyIconContainer: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: '#F3F4F6',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 24,
   },
   emptyEmoji: {
-    fontSize: 64,
-    marginBottom: 16,
+    fontSize: 56,
   },
   emptyTitle: {
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: 22,
+    fontWeight: '700',
     marginBottom: 8,
+    letterSpacing: -0.3,
   },
   emptySubtitle: {
-    fontSize: 14,
+    fontSize: 15,
     textAlign: 'center',
-  },
-  emptyText: {
-    fontSize: 16,
+    lineHeight: 22,
+    paddingHorizontal: 40,
   },
   receiptsList: {
-    gap: 12,
+    gap: 16,
   },
   receiptCard: {
-    padding: 16,
-    borderRadius: 8,
+    backgroundColor: '#FFFFFF',
+    padding: 20,
+    borderRadius: 16,
+    marginBottom: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
     borderWidth: 1,
+    borderColor: '#F3F4F6',
   },
   receiptCardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 8,
+    marginBottom: 16,
   },
   receiptCardInfo: {
     flex: 1,
+    marginRight: 12,
   },
   receiptNumber: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 4,
+    fontSize: 17,
+    fontWeight: '700',
+    marginBottom: 6,
+    letterSpacing: -0.2,
   },
   receiptDate: {
-    fontSize: 12,
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  totalBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+    minWidth: 80,
+    alignItems: 'flex-end',
   },
   receiptTotal: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: '700',
+    letterSpacing: -0.3,
   },
   receiptCardFooter: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#F3F4F6',
+  },
+  itemsBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 12,
+    gap: 6,
   },
   receiptItemsCount: {
-    fontSize: 12,
+    fontSize: 13,
+    fontWeight: '500',
   },
   deleteButton: {
-    padding: 4,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   footer: {
-    padding: 16,
+    padding: 20,
+    paddingBottom: 24,
     borderTopWidth: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 5,
   },
   createButton: {
+    borderRadius: 14,
+    backgroundColor: '#2563EB',
+    shadowColor: '#2563EB',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+    overflow: 'hidden',
+  },
+  createButtonContent: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 16,
-    borderRadius: 8,
-    gap: 8,
-    backgroundColor: '#2563EB', // Brand Primary color - Tech Blue
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3, // Android shadow
+    paddingVertical: 18,
+    gap: 10,
   },
   createButtonText: {
     color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
-    textShadowColor: 'rgba(0, 0, 0, 0.1)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
+    fontSize: 17,
+    fontWeight: '700',
+    letterSpacing: -0.2,
   },
 });

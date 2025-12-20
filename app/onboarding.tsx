@@ -1,6 +1,6 @@
 import LoadingView from '@/components/loading-view';
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert, Image, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert, Image, KeyboardAvoidingView, Platform, ScrollView, Animated } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
@@ -17,6 +17,7 @@ export default function OnboardingScreen() {
   const insets = useSafeAreaInsets();
   const [currentStep, setCurrentStep] = useState(1);
   const [saving, setSaving] = useState(false);
+  const fadeAnim = useRef(new Animated.Value(1)).current;
 
   // Form data
   const [logoUri, setLogoUri] = useState<string | null>(null);
@@ -70,6 +71,19 @@ export default function OnboardingScreen() {
     }
 
     if (currentStep < TOTAL_STEPS) {
+      // Animate step transition
+      Animated.sequence([
+        Animated.timing(fadeAnim, {
+          toValue: 0,
+          duration: 150,
+          useNativeDriver: true,
+        }),
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 150,
+          useNativeDriver: true,
+        }),
+      ]).start();
       setCurrentStep(currentStep + 1);
     } else {
       handleComplete();
@@ -78,6 +92,19 @@ export default function OnboardingScreen() {
 
   const handleSkip = () => {
     if (currentStep < TOTAL_STEPS) {
+      // Animate step transition
+      Animated.sequence([
+        Animated.timing(fadeAnim, {
+          toValue: 0,
+          duration: 150,
+          useNativeDriver: true,
+        }),
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 150,
+          useNativeDriver: true,
+        }),
+      ]).start();
       setCurrentStep(currentStep + 1);
     } else {
       handleComplete();
@@ -121,6 +148,19 @@ export default function OnboardingScreen() {
 
   const handleBack = () => {
     if (currentStep > 1) {
+      // Animate step transition
+      Animated.sequence([
+        Animated.timing(fadeAnim, {
+          toValue: 0,
+          duration: 150,
+          useNativeDriver: true,
+        }),
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 150,
+          useNativeDriver: true,
+        }),
+      ]).start();
       setCurrentStep(currentStep - 1);
     }
   };
@@ -139,15 +179,16 @@ export default function OnboardingScreen() {
               Upload your business logo to personalize your receipts. This is optional and can be added later.
             </Text>
             <TouchableOpacity
-              style={[logoUri ? styles.logoButtonWithImage : styles.logoButton, { borderColor: colors.tabIconDefault }]}
+              style={[logoUri ? styles.logoButtonWithImage : styles.logoButton, { borderColor: '#E5E7EB' }]}
               onPress={handlePickImage}
+              activeOpacity={0.7}
             >
               {logoUri ? (
                 <Image source={{ uri: logoUri }} style={styles.logo} resizeMode="contain" />
               ) : (
                 <>
-                  <IconSymbol size={32} name="photo" color={colors.tabIconDefault} />
-                  <Text style={[styles.logoButtonText, { color: colors.tabIconDefault }]}>Tap to Upload Logo</Text>
+                  <IconSymbol size={32} name="photo" color="#9CA3AF" />
+                  <Text style={[styles.logoButtonText, { color: '#9CA3AF' }]}>Tap to Upload Logo</Text>
                 </>
               )}
             </TouchableOpacity>
@@ -174,9 +215,9 @@ export default function OnboardingScreen() {
               Enter your business name. This will appear on all your receipts.
             </Text>
             <TextInput
-              style={[styles.input, { backgroundColor: colors.background, borderColor: colors.tabIconDefault, color: colors.text }]}
+              style={[styles.input, { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', color: colors.text }]}
               placeholder="Enter your business name"
-              placeholderTextColor={colors.tabIconDefault}
+              placeholderTextColor="#9CA3AF"
               value={businessName}
               onChangeText={setBusinessName}
               returnKeyType="next"
@@ -198,9 +239,9 @@ export default function OnboardingScreen() {
               Enter your business phone number. This will be displayed on your receipts.
             </Text>
             <TextInput
-              style={[styles.input, { backgroundColor: colors.background, borderColor: colors.tabIconDefault, color: colors.text }]}
+              style={[styles.input, { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', color: colors.text }]}
               placeholder="08012345678"
-              placeholderTextColor={colors.tabIconDefault}
+              placeholderTextColor="#9CA3AF"
               keyboardType="phone-pad"
               value={phone}
               onChangeText={setPhone}
@@ -223,9 +264,9 @@ export default function OnboardingScreen() {
               Add optional details about your business. You can skip this step or fill in any fields you want.
             </Text>
             <TextInput
-              style={[styles.input, { backgroundColor: colors.background, borderColor: colors.tabIconDefault, color: colors.text }]}
+              style={[styles.input, { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', color: colors.text }]}
               placeholder="Address (Optional)"
-              placeholderTextColor={colors.tabIconDefault}
+              placeholderTextColor="#9CA3AF"
               value={address}
               onChangeText={setAddress}
               multiline
@@ -233,17 +274,17 @@ export default function OnboardingScreen() {
               returnKeyType="next"
             />
             <TextInput
-              style={[styles.input, { backgroundColor: colors.background, borderColor: colors.tabIconDefault, color: colors.text, marginTop: 12 }]}
+              style={[styles.input, { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', color: colors.text, marginTop: 12 }]}
               placeholder="CAC Number (Optional)"
-              placeholderTextColor={colors.tabIconDefault}
+              placeholderTextColor="#9CA3AF"
               value={cacNumber}
               onChangeText={setCacNumber}
               returnKeyType="next"
             />
             <TextInput
-              style={[styles.input, { backgroundColor: colors.background, borderColor: colors.tabIconDefault, color: colors.text, marginTop: 12 }]}
+              style={[styles.input, { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', color: colors.text, marginTop: 12 }]}
               placeholder="Website (Optional)"
-              placeholderTextColor={colors.tabIconDefault}
+              placeholderTextColor="#9CA3AF"
               keyboardType="url"
               autoCapitalize="none"
               value={websiteUri}
@@ -265,9 +306,9 @@ export default function OnboardingScreen() {
               Add a custom message that will appear at the bottom of your receipts. Leave empty to use the default message.
             </Text>
             <TextInput
-              style={[styles.input, styles.textArea, { backgroundColor: colors.background, borderColor: colors.tabIconDefault, color: colors.text }]}
+              style={[styles.input, styles.textArea, { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', color: colors.text }]}
               placeholder="Thank you for your patronage!"
-              placeholderTextColor={colors.tabIconDefault}
+              placeholderTextColor="#9CA3AF"
               value={customFooter}
               onChangeText={setCustomFooter}
               multiline
@@ -295,11 +336,11 @@ export default function OnboardingScreen() {
       keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
     >
       {/* Progress Bar */}
-      <View style={[styles.progressContainer, { paddingTop: insets.top + 16 }]}>
+      <View style={[styles.progressContainer, { backgroundColor: '#FFFFFF', paddingTop: insets.top + 16 }]}>
         <View style={styles.progressBar}>
-          <View style={[styles.progressFill, { width: `${(currentStep / TOTAL_STEPS) * 100}%`, backgroundColor: colors.tint }]} />
+          <Animated.View style={[styles.progressFill, { width: `${(currentStep / TOTAL_STEPS) * 100}%`, backgroundColor: colors.tint }]} />
         </View>
-        <Text style={[styles.progressText, { color: colors.tabIconDefault }]}>
+        <Text style={[styles.progressText, { color: '#6B7280' }]}>
           Step {currentStep} of {TOTAL_STEPS}
         </Text>
       </View>
@@ -309,17 +350,21 @@ export default function OnboardingScreen() {
         style={styles.content}
         contentContainerStyle={styles.contentContainer}
         keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
       >
-        {renderStepContent()}
+        <Animated.View style={{ opacity: fadeAnim, flex: 1 }}>
+          {renderStepContent()}
+        </Animated.View>
       </ScrollView>
 
       {/* Navigation Buttons */}
-      <View style={[styles.footer, { borderTopColor: colors.tabIconDefault, backgroundColor: colors.background }]}>
+      <View style={[styles.footer, { borderTopColor: '#E5E7EB', backgroundColor: '#FFFFFF' }]}>
         <View style={styles.buttonRow}>
           {currentStep > 1 && (
             <TouchableOpacity
-              style={[styles.backButton, { backgroundColor: colors.background, borderColor: colors.tabIconDefault }]}
+              style={[styles.backButton, { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB' }]}
               onPress={handleBack}
+              activeOpacity={0.7}
             >
               <IconSymbol size={20} name="chevron.left" color={colors.text} />
               <Text style={[styles.backButtonText, { color: colors.text }]}>Back</Text>
@@ -329,9 +374,10 @@ export default function OnboardingScreen() {
           <View style={styles.rightButtons}>
             {isOptionalStep && (
               <TouchableOpacity
-                style={[styles.skipButton, { backgroundColor: colors.background, borderColor: colors.tabIconDefault }]}
+                style={[styles.skipButton, { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB' }]}
                 onPress={handleSkip}
                 disabled={saving}
+                activeOpacity={0.7}
               >
                 <Text style={[styles.skipButtonText, { color: colors.text }]}>Skip</Text>
               </TouchableOpacity>
@@ -339,10 +385,11 @@ export default function OnboardingScreen() {
             <TouchableOpacity
               style={[
                 styles.nextButton,
-                { backgroundColor: canProceed && !saving ? colors.tint : colors.tabIconDefault }
+                { backgroundColor: canProceed && !saving ? colors.tint : '#D1D5DB' }
               ]}
               onPress={handleNext}
               disabled={!canProceed || saving}
+              activeOpacity={0.8}
             >
               <Text style={styles.nextButtonText}>
                 {currentStep === TOTAL_STEPS ? (saving ? 'Saving...' : 'Complete') : 'Next'}
@@ -363,23 +410,31 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   progressContainer: {
-    padding: 16,
-    paddingBottom: 12,
+    padding: 20,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
   },
   progressBar: {
-    height: 4,
+    height: 6,
     backgroundColor: '#E5E7EB',
-    borderRadius: 2,
+    borderRadius: 3,
     overflow: 'hidden',
-    marginBottom: 8,
+    marginBottom: 12,
   },
   progressFill: {
     height: '100%',
-    borderRadius: 2,
+    borderRadius: 3,
   },
   progressText: {
-    fontSize: 12,
+    fontSize: 14,
     textAlign: 'center',
+    fontWeight: '600',
   },
   content: {
     flex: 1,
@@ -394,50 +449,53 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   iconContainer: {
-    marginBottom: 24,
+    marginBottom: 32,
   },
   stepTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 28,
+    fontWeight: '700',
     textAlign: 'center',
-    marginBottom: 12,
+    marginBottom: 16,
+    letterSpacing: -0.5,
   },
   stepDescription: {
-    fontSize: 14,
+    fontSize: 16,
     textAlign: 'center',
-    marginBottom: 32,
-    paddingHorizontal: 16,
-    lineHeight: 20,
+    marginBottom: 40,
+    paddingHorizontal: 20,
+    lineHeight: 24,
+    color: '#6B7280',
   },
   input: {
     width: '100%',
-    borderWidth: 1,
-    borderRadius: 8,
-    padding: 12,
+    borderWidth: 1.5,
+    borderRadius: 12,
+    padding: 16,
     fontSize: 16,
-    minHeight: 48,
+    minHeight: 52,
+    backgroundColor: '#FFFFFF',
   },
   textArea: {
-    minHeight: 100,
+    minHeight: 120,
     textAlignVertical: 'top',
   },
   logoButton: {
-    width: 200,
-    height: 200,
+    width: 220,
+    height: 220,
     borderWidth: 2,
     borderStyle: 'dashed',
-    borderRadius: 12,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
     gap: 12,
     backgroundColor: '#F9FAFB',
   },
   logoButtonWithImage: {
-    width: 200,
-    height: 200,
-    borderWidth: 1,
+    width: 220,
+    height: 220,
+    borderWidth: 1.5,
     borderStyle: 'solid',
-    borderRadius: 12,
+    borderRadius: 16,
     overflow: 'hidden',
     backgroundColor: '#F9FAFB',
   },
@@ -457,8 +515,14 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   footer: {
-    padding: 16,
+    padding: 20,
+    paddingBottom: 24,
     borderTopWidth: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 5,
   },
   buttonRow: {
     flexDirection: 'row',
@@ -469,14 +533,15 @@ const styles = StyleSheet.create({
   backButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    gap: 4,
+    padding: 14,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    gap: 6,
   },
   backButtonText: {
     fontSize: 16,
     fontWeight: '600',
+    letterSpacing: -0.2,
   },
   rightButtons: {
     flexDirection: 'row',
@@ -485,29 +550,36 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   skipButton: {
-    padding: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    paddingHorizontal: 20,
+    padding: 14,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    paddingHorizontal: 24,
   },
   skipButtonText: {
     fontSize: 16,
     fontWeight: '600',
+    letterSpacing: -0.2,
   },
   nextButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 12,
-    borderRadius: 8,
-    paddingHorizontal: 24,
+    padding: 16,
+    borderRadius: 14,
+    paddingHorizontal: 28,
     gap: 8,
-    minWidth: 100,
+    minWidth: 120,
     justifyContent: 'center',
+    shadowColor: '#2563EB',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
   nextButtonText: {
     color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 17,
+    fontWeight: '700',
+    letterSpacing: -0.2,
   },
 });
 

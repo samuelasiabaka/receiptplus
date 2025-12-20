@@ -127,9 +127,9 @@ export default function BusinessProfileScreen() {
       keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
     >
       {/* Header */}
-      <View style={[styles.header, { borderBottomColor: colors.tabIconDefault, paddingTop: insets.top + 16 }]}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <IconSymbol size={24} name="chevron.left" color={colors.text} />
+      <View style={[styles.header, { backgroundColor: '#FFFFFF', borderBottomColor: '#E5E7EB', paddingTop: insets.top + 16 }]}>
+        <TouchableOpacity onPress={() => router.back()} style={[styles.backButton, { backgroundColor: '#F3F4F6' }]}>
+          <IconSymbol size={20} name="chevron.left" color={colors.text} />
         </TouchableOpacity>
         <Text style={[styles.title, { color: colors.text }]}>Business Profile</Text>
         <View style={styles.placeholder} />
@@ -145,25 +145,27 @@ export default function BusinessProfileScreen() {
         <View style={styles.section}>
           <Text style={[styles.label, { color: colors.text }]}>Logo</Text>
           <TouchableOpacity
-            style={[logoUri ? styles.logoButtonWithImage : styles.logoButton, { borderColor: colors.tabIconDefault }]}
+            style={[logoUri ? styles.logoButtonWithImage : styles.logoButton, { borderColor: '#E5E7EB' }]}
             onPress={handlePickImage}
+            activeOpacity={0.7}
           >
             {logoUri ? (
               <Image source={{ uri: logoUri }} style={styles.logo} resizeMode="contain" />
             ) : (
               <>
-                <IconSymbol size={24} name="photo" color={colors.tabIconDefault} />
-                <Text style={[styles.logoButtonText, { color: colors.tabIconDefault }]}>Upload Logo</Text>
+                <IconSymbol size={24} name="photo" color="#9CA3AF" />
+                <Text style={[styles.logoButtonText, { color: '#9CA3AF' }]}>Upload Logo</Text>
               </>
             )}
           </TouchableOpacity>
-          <Text style={[styles.helperText, { color: colors.tabIconDefault }]}>
+          <Text style={[styles.helperText, { color: '#9CA3AF' }]}>
             Recommended: Square image (1:1), max 2MB. Formats: PNG, JPEG, GIF, WebP
           </Text>
           {logoUri && (
             <TouchableOpacity
               onPress={() => setLogoUri(null)}
               style={styles.removeLogoButton}
+              activeOpacity={0.7}
             >
               <Text style={[styles.removeLogoText, { color: '#EF4444' }]}>Remove Logo</Text>
             </TouchableOpacity>
@@ -174,9 +176,9 @@ export default function BusinessProfileScreen() {
         <View style={styles.section}>
           <Text style={[styles.label, { color: colors.text }]}>Business Name *</Text>
           <TextInput
-            style={[styles.input, { backgroundColor: colors.background, borderColor: colors.tabIconDefault, color: colors.text }]}
+            style={[styles.input, { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', color: colors.text }]}
             placeholder="Enter your business name"
-            placeholderTextColor={colors.tabIconDefault}
+            placeholderTextColor="#9CA3AF"
             value={businessName}
             onChangeText={setBusinessName}
           />
@@ -186,9 +188,9 @@ export default function BusinessProfileScreen() {
         <View style={styles.section}>
           <Text style={[styles.label, { color: colors.text }]}>Phone Number *</Text>
           <TextInput
-            style={[styles.input, { backgroundColor: colors.background, borderColor: colors.tabIconDefault, color: colors.text }]}
+            style={[styles.input, { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', color: colors.text }]}
             placeholder="08012345678"
-            placeholderTextColor={colors.tabIconDefault}
+            placeholderTextColor="#9CA3AF"
             keyboardType="phone-pad"
             value={phone}
             onChangeText={setPhone}
@@ -199,9 +201,9 @@ export default function BusinessProfileScreen() {
         <View style={styles.section}>
           <Text style={[styles.label, { color: colors.text }]}>Address (Optional)</Text>
           <TextInput
-            style={[styles.input, { backgroundColor: colors.background, borderColor: colors.tabIconDefault, color: colors.text }]}
+            style={[styles.input, { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', color: colors.text }]}
             placeholder="123 Main Street"
-            placeholderTextColor={colors.tabIconDefault}
+            placeholderTextColor="#9CA3AF"
             value={address}
             onChangeText={setAddress}
             multiline
@@ -213,9 +215,9 @@ export default function BusinessProfileScreen() {
         <View style={styles.section}>
           <Text style={[styles.label, { color: colors.text }]}>CAC Number (Optional)</Text>
           <TextInput
-            style={[styles.input, { backgroundColor: colors.background, borderColor: colors.tabIconDefault, color: colors.text }]}
+            style={[styles.input, { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', color: colors.text }]}
             placeholder="RC12345"
-            placeholderTextColor={colors.tabIconDefault}
+            placeholderTextColor="#9CA3AF"
             value={cacNumber}
             onChangeText={setCacNumber}
           />
@@ -225,9 +227,9 @@ export default function BusinessProfileScreen() {
         <View style={styles.section}>
           <Text style={[styles.label, { color: colors.text }]}>Website (Optional)</Text>
           <TextInput
-            style={[styles.input, { backgroundColor: colors.background, borderColor: colors.tabIconDefault, color: colors.text }]}
+            style={[styles.input, { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', color: colors.text }]}
             placeholder="https://example.com"
-            placeholderTextColor={colors.tabIconDefault}
+            placeholderTextColor="#9CA3AF"
             keyboardType="url"
             autoCapitalize="none"
             value={websiteUri}
@@ -239,36 +241,38 @@ export default function BusinessProfileScreen() {
         <View style={styles.section}>
           <Text style={[styles.label, { color: colors.text }]}>Custom Receipt Footer (Optional)</Text>
           <TextInput
-            style={[styles.textArea, { backgroundColor: colors.background, borderColor: colors.tabIconDefault, color: colors.text }]}
+            style={[styles.textArea, { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', color: colors.text }]}
             placeholder="Thank you for your patronage!"
-            placeholderTextColor={colors.tabIconDefault}
+            placeholderTextColor="#9CA3AF"
             value={customFooter}
             onChangeText={setCustomFooter}
             multiline
             numberOfLines={3}
             textAlignVertical="top"
           />
-          <Text style={[styles.helperText, { color: colors.tabIconDefault }]}>
+          <Text style={[styles.helperText, { color: '#9CA3AF' }]}>
             This text will appear at the bottom of your receipts. Leave empty to use default message.
           </Text>
         </View>
       </ScrollView>
 
       {/* Action Buttons */}
-      <View style={[styles.footer, { borderTopColor: colors.tabIconDefault, backgroundColor: colors.background }]}>
+      <View style={[styles.footer, { borderTopColor: '#E5E7EB', backgroundColor: '#FFFFFF' }]}>
         <TouchableOpacity
           style={[
             styles.saveButton,
-            { backgroundColor: (!businessName.trim() || !phone.trim() || saving) ? colors.tabIconDefault : colors.tint }
+            { backgroundColor: (!businessName.trim() || !phone.trim() || saving) ? '#D1D5DB' : '#2563EB' }
           ]}
           onPress={handleSave}
           disabled={!businessName.trim() || !phone.trim() || saving}
+          activeOpacity={0.8}
         >
           <Text style={styles.saveButtonText}>{saving ? 'Saving...' : 'Save Profile'}</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.cancelButton, { backgroundColor: colors.background, borderColor: colors.tabIconDefault }]}
+          style={[styles.cancelButton, { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB' }]}
           onPress={() => router.back()}
+          activeOpacity={0.7}
         >
           <Text style={[styles.cancelButtonText, { color: colors.text }]}>Cancel</Text>
         </TouchableOpacity>
@@ -288,57 +292,81 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
+    paddingHorizontal: 20,
+    paddingBottom: 16,
     borderBottomWidth: 1,
     gap: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
   },
   backButton: {
-    padding: 4,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 28,
+    fontWeight: '700',
     flex: 1,
+    letterSpacing: -0.5,
   },
   placeholder: {
-    width: 32,
+    width: 40,
   },
   content: {
     flex: 1,
   },
   contentContainer: {
-    padding: 16,
+    padding: 20,
   },
   section: {
-    marginBottom: 24,
+    backgroundColor: '#FFFFFF',
+    padding: 20,
+    borderRadius: 16,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: '#F3F4F6',
   },
   label: {
-    fontSize: 14,
-    fontWeight: '600',
-    marginBottom: 8,
+    fontSize: 16,
+    fontWeight: '700',
+    marginBottom: 12,
+    letterSpacing: -0.2,
   },
   input: {
-    borderWidth: 1,
-    borderRadius: 8,
-    padding: 12,
+    borderWidth: 1.5,
+    borderRadius: 12,
+    padding: 16,
     fontSize: 16,
+    backgroundColor: '#FFFFFF',
   },
   logoButton: {
     width: '100%',
-    height: 120,
+    height: 140,
     borderWidth: 2,
     borderStyle: 'dashed',
-    borderRadius: 8,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
+    gap: 12,
+    backgroundColor: '#F9FAFB',
   },
   logoButtonWithImage: {
     width: '100%',
-    height: 120,
-    borderWidth: 1,
+    height: 140,
+    borderWidth: 1.5,
     borderStyle: 'solid',
-    borderRadius: 8,
+    borderRadius: 16,
     overflow: 'hidden',
     backgroundColor: '#F9FAFB',
   },
@@ -361,41 +389,57 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   footer: {
-    padding: 16,
+    padding: 20,
+    paddingBottom: 24,
     borderTopWidth: 1,
     gap: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 5,
   },
   saveButton: {
-    padding: 16,
-    borderRadius: 8,
+    padding: 18,
+    borderRadius: 14,
     alignItems: 'center',
+    shadowColor: '#2563EB',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
   saveButtonText: {
     color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 17,
+    fontWeight: '700',
+    letterSpacing: -0.2,
   },
   cancelButton: {
     padding: 16,
-    borderRadius: 8,
+    borderRadius: 12,
     alignItems: 'center',
-    borderWidth: 1,
+    borderWidth: 1.5,
   },
   cancelButtonText: {
     fontSize: 16,
     fontWeight: '600',
+    letterSpacing: -0.2,
   },
   textArea: {
-    borderWidth: 1,
-    borderRadius: 8,
-    padding: 12,
+    borderWidth: 1.5,
+    borderRadius: 12,
+    padding: 16,
     fontSize: 16,
-    minHeight: 80,
+    minHeight: 100,
+    textAlignVertical: 'top',
+    backgroundColor: '#FFFFFF',
   },
   helperText: {
-    fontSize: 12,
-    marginTop: 4,
-    fontStyle: 'italic',
+    fontSize: 13,
+    marginTop: 8,
+    lineHeight: 18,
+    color: '#6B7280',
   },
 });
 
