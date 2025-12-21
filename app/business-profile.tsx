@@ -127,7 +127,7 @@ export default function BusinessProfileScreen() {
       keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
     >
       {/* Header */}
-      <View style={[styles.header, { backgroundColor: '#FFFFFF', borderBottomColor: '#E5E7EB', paddingTop: insets.top + 16 }]}>
+      <View style={[styles.header, { backgroundColor: colors.cardBackground, borderBottomColor: colors.inputBorder, paddingTop: insets.top + 16 }]}>
         <TouchableOpacity onPress={() => router.back()} style={[styles.backButton, { backgroundColor: '#F3F4F6' }]}>
           <IconSymbol size={20} name="chevron.left" color={colors.text} />
         </TouchableOpacity>
@@ -142,10 +142,10 @@ export default function BusinessProfileScreen() {
         keyboardShouldPersistTaps="handled"
       >
         {/* Logo Upload */}
-        <View style={styles.section}>
+        <View style={[styles.section, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}>
           <Text style={[styles.label, { color: colors.text }]}>Logo</Text>
           <TouchableOpacity
-            style={[logoUri ? styles.logoButtonWithImage : styles.logoButton, { borderColor: '#E5E7EB' }]}
+            style={[logoUri ? styles.logoButtonWithImage : styles.logoButton, { borderColor: colors.inputBorder }]}
             onPress={handlePickImage}
             activeOpacity={0.7}
           >
@@ -173,24 +173,24 @@ export default function BusinessProfileScreen() {
         </View>
 
         {/* Business Name */}
-        <View style={styles.section}>
+        <View style={[styles.section, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}>
           <Text style={[styles.label, { color: colors.text }]}>Business Name *</Text>
           <TextInput
-            style={[styles.input, { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', color: colors.text }]}
+            style={[styles.input, { backgroundColor: colors.inputBackground, borderColor: colors.inputBorder, color: colors.text }]}
             placeholder="Enter your business name"
-            placeholderTextColor="#9CA3AF"
+            placeholderTextColor={colors.tabIconDefault}
             value={businessName}
             onChangeText={setBusinessName}
           />
         </View>
 
         {/* Phone Number */}
-        <View style={styles.section}>
+        <View style={[styles.section, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}>
           <Text style={[styles.label, { color: colors.text }]}>Phone Number *</Text>
           <TextInput
             style={[styles.input, { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', color: colors.text }]}
             placeholder="08012345678"
-            placeholderTextColor="#9CA3AF"
+            placeholderTextColor={colors.tabIconDefault}
             keyboardType="phone-pad"
             value={phone}
             onChangeText={setPhone}
@@ -198,12 +198,12 @@ export default function BusinessProfileScreen() {
         </View>
 
         {/* Address */}
-        <View style={styles.section}>
+        <View style={[styles.section, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}>
           <Text style={[styles.label, { color: colors.text }]}>Address (Optional)</Text>
           <TextInput
             style={[styles.input, { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', color: colors.text }]}
             placeholder="123 Main Street"
-            placeholderTextColor="#9CA3AF"
+            placeholderTextColor={colors.tabIconDefault}
             value={address}
             onChangeText={setAddress}
             multiline
@@ -212,24 +212,24 @@ export default function BusinessProfileScreen() {
         </View>
 
         {/* CAC Number */}
-        <View style={styles.section}>
+        <View style={[styles.section, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}>
           <Text style={[styles.label, { color: colors.text }]}>CAC Number (Optional)</Text>
           <TextInput
             style={[styles.input, { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', color: colors.text }]}
             placeholder="RC12345"
-            placeholderTextColor="#9CA3AF"
+            placeholderTextColor={colors.tabIconDefault}
             value={cacNumber}
             onChangeText={setCacNumber}
           />
         </View>
 
         {/* Website URI */}
-        <View style={styles.section}>
+        <View style={[styles.section, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}>
           <Text style={[styles.label, { color: colors.text }]}>Website (Optional)</Text>
           <TextInput
             style={[styles.input, { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', color: colors.text }]}
             placeholder="https://example.com"
-            placeholderTextColor="#9CA3AF"
+            placeholderTextColor={colors.tabIconDefault}
             keyboardType="url"
             autoCapitalize="none"
             value={websiteUri}
@@ -238,12 +238,12 @@ export default function BusinessProfileScreen() {
         </View>
 
         {/* Custom Footer */}
-        <View style={styles.section}>
+        <View style={[styles.section, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}>
           <Text style={[styles.label, { color: colors.text }]}>Custom Receipt Footer (Optional)</Text>
           <TextInput
             style={[styles.textArea, { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', color: colors.text }]}
             placeholder="Thank you for your patronage!"
-            placeholderTextColor="#9CA3AF"
+            placeholderTextColor={colors.tabIconDefault}
             value={customFooter}
             onChangeText={setCustomFooter}
             multiline
@@ -256,10 +256,10 @@ export default function BusinessProfileScreen() {
         </View>
 
         {/* Help Guide Section */}
-        <View style={styles.section}>
+        <View style={[styles.section, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}>
           <Text style={[styles.label, { color: colors.text }]}>Help & Support</Text>
           <TouchableOpacity
-            style={[styles.helpButton, { backgroundColor: '#F3F4F6', borderColor: '#E5E7EB' }]}
+            style={[styles.helpButton, { backgroundColor: colors.background, borderColor: colors.inputBorder }]}
             onPress={() => router.push('/help-guide' as any)}
             activeOpacity={0.7}
           >
@@ -278,7 +278,7 @@ export default function BusinessProfileScreen() {
       </ScrollView>
 
       {/* Action Buttons */}
-      <View style={[styles.footer, { borderTopColor: '#E5E7EB', backgroundColor: '#FFFFFF' }]}>
+      <View style={[styles.footer, { borderTopColor: colors.inputBorder, backgroundColor: colors.cardBackground, paddingBottom: insets.bottom + 24 }]}>
         <TouchableOpacity
           style={[
             styles.saveButton,
@@ -291,7 +291,7 @@ export default function BusinessProfileScreen() {
           <Text style={styles.saveButtonText}>{saving ? 'Saving...' : 'Save Profile'}</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.cancelButton, { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB' }]}
+          style={[styles.cancelButton, { backgroundColor: colors.cardBackground, borderColor: colors.inputBorder }]}
           onPress={() => router.back()}
           activeOpacity={0.7}
         >
@@ -346,7 +346,6 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   section: {
-    backgroundColor: '#FFFFFF',
     padding: 20,
     borderRadius: 16,
     marginBottom: 20,
@@ -356,7 +355,6 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 2,
     borderWidth: 1,
-    borderColor: '#F3F4F6',
   },
   label: {
     fontSize: 16,
@@ -369,7 +367,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     fontSize: 16,
-    backgroundColor: '#FFFFFF',
   },
   logoButton: {
     width: '100%',

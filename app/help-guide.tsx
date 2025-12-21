@@ -153,7 +153,7 @@ export default function HelpGuideScreen({ onComplete, showSkip = true }: { onCom
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
-      <View style={[styles.header, { backgroundColor: '#FFFFFF', paddingTop: insets.top + 16, borderBottomColor: '#E5E7EB' }]}>
+      <View style={[styles.header, { backgroundColor: colors.cardBackground, paddingTop: insets.top + 16, borderBottomColor: colors.inputBorder }]}>
         <View style={styles.headerContent}>
           {showSkip ? (
             <TouchableOpacity onPress={handleSkip} style={styles.skipButton}>
@@ -219,25 +219,24 @@ export default function HelpGuideScreen({ onComplete, showSkip = true }: { onCom
       </ScrollView>
 
       {/* Navigation Buttons */}
-      <View style={[styles.footer, { backgroundColor: '#FFFFFF', borderTopColor: '#E5E7EB' }]}>
+      <View style={[styles.footer, { backgroundColor: colors.cardBackground, borderTopColor: colors.inputBorder, paddingBottom: insets.bottom + 24 }]}>
         <View style={styles.buttonRow}>
-          {currentStep > 0 ? (
+          {currentStep > 0 && (
             <TouchableOpacity
-              style={[styles.backButtonFooter, { backgroundColor: '#F3F4F6', borderColor: '#E5E7EB' }]}
+              style={[styles.backButtonFooter, { backgroundColor: colors.background, borderColor: colors.inputBorder }]}
               onPress={handleBack}
               activeOpacity={0.7}
             >
               <IconSymbol size={20} name="chevron.left" color={colors.text} />
               <Text style={[styles.backButtonText, { color: colors.text }]}>Back</Text>
             </TouchableOpacity>
-          ) : (
-            <View style={styles.backButtonFooter} />
           )}
 
           <TouchableOpacity
             style={[
               styles.nextButton,
               { backgroundColor: colors.tint },
+              currentStep === 0 && styles.nextButtonFullWidth,
             ]}
             onPress={handleNext}
             activeOpacity={0.8}
@@ -386,7 +385,6 @@ const styles = StyleSheet.create({
   },
   buttonRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     gap: 12,
   },
   backButtonFooter: {
@@ -397,6 +395,9 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1.5,
     gap: 6,
+    flex: 1,
+  },
+  nextButtonFullWidth: {
     flex: 1,
   },
   backButtonText: {

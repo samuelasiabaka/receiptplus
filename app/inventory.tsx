@@ -52,7 +52,7 @@ function AnimatedInventoryCard({
         transform: [{ translateY }],
       }}
     >
-      <View style={styles.itemCard}>
+      <View style={[styles.itemCard, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}>
         <View style={styles.itemCardContent}>
           <Text style={[styles.itemName, { color: colors.text }]}>{item.name}</Text>
           {item.description && (
@@ -225,8 +225,8 @@ export default function InventoryScreen() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
-      <View style={[styles.header, { backgroundColor: '#FFFFFF', borderBottomColor: '#E5E7EB', paddingTop: insets.top + 16 }]}>
-        <TouchableOpacity onPress={() => router.back()} style={[styles.backButton, { backgroundColor: '#F3F4F6' }]}>
+      <View style={[styles.header, { backgroundColor: colors.cardBackground, borderBottomColor: colors.inputBorder, paddingTop: insets.top + 16 }]}>
+        <TouchableOpacity onPress={() => router.back()} style={[styles.backButton, { backgroundColor: colors.background }]}>
           <IconSymbol size={20} name="chevron.left" color={colors.text} />
         </TouchableOpacity>
         <Text style={[styles.title, { color: colors.text }]}>Inventory</Text>
@@ -234,18 +234,18 @@ export default function InventoryScreen() {
       </View>
 
       {/* Search Bar */}
-      <View style={styles.searchContainer}>
-        <IconSymbol size={20} name="magnifyingglass" color="#9CA3AF" />
+      <View style={[styles.searchContainer, { backgroundColor: colors.inputBackground, borderColor: colors.inputBorder }]}>
+        <IconSymbol size={20} name="magnifyingglass" color={colors.tabIconDefault} />
         <TextInput
           style={[styles.searchInput, { color: colors.text }]}
           placeholder="Search items (type at least 2 letters)..."
-          placeholderTextColor="#9CA3AF"
+          placeholderTextColor={colors.tabIconDefault}
           value={searchQuery}
           onChangeText={setSearchQuery}
         />
         {searchQuery.length > 0 && (
           <TouchableOpacity onPress={() => setSearchQuery('')} activeOpacity={0.7}>
-            <IconSymbol size={20} name="xmark.circle.fill" color="#9CA3AF" />
+            <IconSymbol size={20} name="xmark.circle.fill" color={colors.tabIconDefault} />
           </TouchableOpacity>
         )}
       </View>
@@ -284,7 +284,7 @@ export default function InventoryScreen() {
       </ScrollView>
 
       {/* Add Button */}
-      <View style={[styles.footer, { backgroundColor: '#FFFFFF', borderTopColor: '#E5E7EB' }]}>
+      <View style={[styles.footer, { backgroundColor: colors.cardBackground, borderTopColor: colors.inputBorder, paddingBottom: insets.bottom + 24 }]}>
         <TouchableOpacity
           style={styles.addButton}
           onPress={handleAddItem}
@@ -307,12 +307,12 @@ export default function InventoryScreen() {
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
         >
-          <View style={[styles.modalContent, { backgroundColor: '#FFFFFF' }]}>
-            <View style={[styles.modalHeader, { borderBottomColor: '#E5E7EB' }]}>
+          <View style={[styles.modalContent, { backgroundColor: colors.cardBackground }]}>
+            <View style={[styles.modalHeader, { borderBottomColor: colors.inputBorder }]}>
               <Text style={[styles.modalTitle, { color: colors.text }]}>
                 {editingItem ? 'Edit Item' : 'Add Item'}
               </Text>
-              <TouchableOpacity onPress={handleCloseModal} style={[styles.closeButton, { backgroundColor: '#F3F4F6' }]}>
+              <TouchableOpacity onPress={handleCloseModal} style={[styles.closeButton, { backgroundColor: colors.background }]}>
                 <IconSymbol size={20} name="xmark" color={colors.text} />
               </TouchableOpacity>
             </View>
@@ -326,9 +326,9 @@ export default function InventoryScreen() {
               <View style={styles.modalSection}>
                 <Text style={[styles.modalLabel, { color: colors.text }]}>Item Name *</Text>
                 <TextInput
-                  style={[styles.modalInput, { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', color: colors.text }]}
+                  style={[styles.modalInput, { backgroundColor: colors.inputBackground, borderColor: colors.inputBorder, color: colors.text }]}
                   placeholder="Enter item name"
-                  placeholderTextColor="#9CA3AF"
+                  placeholderTextColor={colors.tabIconDefault}
                   value={itemName}
                   onChangeText={setItemName}
                   returnKeyType="next"
@@ -338,9 +338,9 @@ export default function InventoryScreen() {
               <View style={styles.modalSection}>
                 <Text style={[styles.modalLabel, { color: colors.text }]}>Description (Optional)</Text>
                 <TextInput
-                  style={[styles.modalInput, styles.modalTextArea, { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', color: colors.text }]}
+                  style={[styles.modalInput, styles.modalTextArea, { backgroundColor: colors.inputBackground, borderColor: colors.inputBorder, color: colors.text }]}
                   placeholder="Enter item description"
-                  placeholderTextColor="#9CA3AF"
+                  placeholderTextColor={colors.tabIconDefault}
                   value={itemDescription}
                   onChangeText={setItemDescription}
                   multiline
@@ -353,9 +353,9 @@ export default function InventoryScreen() {
               <View style={styles.modalSection}>
                 <Text style={[styles.modalLabel, { color: colors.text }]}>Price *</Text>
                 <TextInput
-                  style={[styles.modalInput, { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', color: colors.text }]}
+                  style={[styles.modalInput, { backgroundColor: colors.inputBackground, borderColor: colors.inputBorder, color: colors.text }]}
                   placeholder="0.00"
-                  placeholderTextColor="#9CA3AF"
+                  placeholderTextColor={colors.tabIconDefault}
                   keyboardType="decimal-pad"
                   value={itemPrice}
                   onChangeText={setItemPrice}
@@ -364,9 +364,9 @@ export default function InventoryScreen() {
               </View>
             </ScrollView>
 
-            <View style={[styles.modalFooter, { borderTopColor: '#E5E7EB', backgroundColor: '#FFFFFF' }]}>
+            <View style={[styles.modalFooter, { borderTopColor: colors.inputBorder, backgroundColor: colors.cardBackground }]}>
               <TouchableOpacity
-                style={[styles.modalCancelButton, { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB' }]}
+                style={[styles.modalCancelButton, { backgroundColor: colors.cardBackground, borderColor: colors.inputBorder }]}
                 onPress={handleCloseModal}
                 activeOpacity={0.7}
               >
@@ -428,8 +428,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     borderRadius: 12,
     borderWidth: 1.5,
-    borderColor: '#E5E7EB',
-    backgroundColor: '#FFFFFF',
     gap: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -440,7 +438,6 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: 16,
-    color: '#111827',
   },
   content: {
     flex: 1,
@@ -482,8 +479,6 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#F3F4F6',
-    backgroundColor: '#FFFFFF',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
@@ -618,7 +613,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     fontSize: 16,
-    backgroundColor: '#FFFFFF',
   },
   modalTextArea: {
     minHeight: 100,

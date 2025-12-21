@@ -24,6 +24,10 @@ export const Colors = {
     icon: '#687076',
     tabIconDefault: '#687076',
     tabIconSelected: primary,
+    inputBackground: '#FFFFFF',
+    inputBorder: '#E5E7EB',
+    cardBackground: '#FFFFFF',
+    cardBorder: '#F3F4F6',
   },
   dark: {
     text: '#ECEDEE',
@@ -34,6 +38,10 @@ export const Colors = {
     icon: '#9BA1A6',
     tabIconDefault: '#9BA1A6',
     tabIconSelected: accent,
+    inputBackground: '#1F2937',
+    inputBorder: '#374151',
+    cardBackground: '#1F2937',
+    cardBorder: '#374151',
   },
 };
 

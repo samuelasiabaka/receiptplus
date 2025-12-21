@@ -179,7 +179,7 @@ export default function OnboardingScreen() {
               Upload your business logo to personalize your receipts. This is optional and can be added later.
             </Text>
             <TouchableOpacity
-              style={[logoUri ? styles.logoButtonWithImage : styles.logoButton, { borderColor: '#E5E7EB' }]}
+              style={[logoUri ? styles.logoButtonWithImage : styles.logoButton, { borderColor: colors.inputBorder }]}
               onPress={handlePickImage}
               activeOpacity={0.7}
             >
@@ -215,9 +215,9 @@ export default function OnboardingScreen() {
               Enter your business name. This will appear on all your receipts.
             </Text>
             <TextInput
-              style={[styles.input, { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', color: colors.text }]}
+              style={[styles.input, { backgroundColor: colors.inputBackground, borderColor: colors.inputBorder, color: colors.text }]}
               placeholder="Enter your business name"
-              placeholderTextColor="#9CA3AF"
+              placeholderTextColor={colors.tabIconDefault}
               value={businessName}
               onChangeText={setBusinessName}
               returnKeyType="next"
@@ -239,9 +239,9 @@ export default function OnboardingScreen() {
               Enter your business phone number. This will be displayed on your receipts.
             </Text>
             <TextInput
-              style={[styles.input, { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', color: colors.text }]}
+              style={[styles.input, { backgroundColor: colors.inputBackground, borderColor: colors.inputBorder, color: colors.text }]}
               placeholder="08012345678"
-              placeholderTextColor="#9CA3AF"
+              placeholderTextColor={colors.tabIconDefault}
               keyboardType="phone-pad"
               value={phone}
               onChangeText={setPhone}
@@ -264,9 +264,9 @@ export default function OnboardingScreen() {
               Add optional details about your business. You can skip this step or fill in any fields you want.
             </Text>
             <TextInput
-              style={[styles.input, { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', color: colors.text }]}
+              style={[styles.input, { backgroundColor: colors.inputBackground, borderColor: colors.inputBorder, color: colors.text }]}
               placeholder="Address (Optional)"
-              placeholderTextColor="#9CA3AF"
+              placeholderTextColor={colors.tabIconDefault}
               value={address}
               onChangeText={setAddress}
               multiline
@@ -276,7 +276,7 @@ export default function OnboardingScreen() {
             <TextInput
               style={[styles.input, { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', color: colors.text, marginTop: 12 }]}
               placeholder="CAC Number (Optional)"
-              placeholderTextColor="#9CA3AF"
+              placeholderTextColor={colors.tabIconDefault}
               value={cacNumber}
               onChangeText={setCacNumber}
               returnKeyType="next"
@@ -284,7 +284,7 @@ export default function OnboardingScreen() {
             <TextInput
               style={[styles.input, { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', color: colors.text, marginTop: 12 }]}
               placeholder="Website (Optional)"
-              placeholderTextColor="#9CA3AF"
+              placeholderTextColor={colors.tabIconDefault}
               keyboardType="url"
               autoCapitalize="none"
               value={websiteUri}
@@ -308,7 +308,7 @@ export default function OnboardingScreen() {
             <TextInput
               style={[styles.input, styles.textArea, { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', color: colors.text }]}
               placeholder="Thank you for your patronage!"
-              placeholderTextColor="#9CA3AF"
+              placeholderTextColor={colors.tabIconDefault}
               value={customFooter}
               onChangeText={setCustomFooter}
               multiline
@@ -336,7 +336,7 @@ export default function OnboardingScreen() {
       keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
     >
       {/* Progress Bar */}
-      <View style={[styles.progressContainer, { backgroundColor: '#FFFFFF', paddingTop: insets.top + 16 }]}>
+      <View style={[styles.progressContainer, { backgroundColor: colors.cardBackground, paddingTop: insets.top + 16 }]}>
         <View style={styles.progressBar}>
           <Animated.View style={[styles.progressFill, { width: `${(currentStep / TOTAL_STEPS) * 100}%`, backgroundColor: colors.tint }]} />
         </View>
@@ -358,11 +358,11 @@ export default function OnboardingScreen() {
       </ScrollView>
 
       {/* Navigation Buttons */}
-      <View style={[styles.footer, { borderTopColor: '#E5E7EB', backgroundColor: '#FFFFFF' }]}>
+      <View style={[styles.footer, { borderTopColor: colors.inputBorder, backgroundColor: colors.cardBackground, paddingBottom: insets.bottom + 24 }]}>
         <View style={styles.buttonRow}>
           {currentStep > 1 && (
             <TouchableOpacity
-              style={[styles.backButton, { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB' }]}
+              style={[styles.backButton, { backgroundColor: colors.cardBackground, borderColor: colors.inputBorder }]}
               onPress={handleBack}
               activeOpacity={0.7}
             >
@@ -374,7 +374,7 @@ export default function OnboardingScreen() {
           <View style={styles.rightButtons}>
             {isOptionalStep && (
               <TouchableOpacity
-                style={[styles.skipButton, { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB' }]}
+                style={[styles.skipButton, { backgroundColor: colors.cardBackground, borderColor: colors.inputBorder }]}
                 onPress={handleSkip}
                 disabled={saving}
                 activeOpacity={0.7}
@@ -473,7 +473,6 @@ const styles = StyleSheet.create({
     padding: 16,
     fontSize: 16,
     minHeight: 52,
-    backgroundColor: '#FFFFFF',
   },
   textArea: {
     minHeight: 120,

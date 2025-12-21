@@ -65,7 +65,7 @@ function AnimatedItemCard({
         transform: [{ translateX }, { scale: scaleAnim }],
       }}
     >
-      <View style={styles.itemCard}>
+      <View style={[styles.itemCard, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}>
         <View style={styles.itemCardContent}>
           <Text style={[styles.itemDescription, { color: colors.text }]}>{item.description}</Text>
           <Text style={[styles.itemDetails, { color: colors.tabIconDefault }]}>
@@ -300,7 +300,7 @@ export default function CreateReceiptScreen() {
       keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
     >
       {/* Header */}
-      <View style={[styles.header, { backgroundColor: '#FFFFFF', borderBottomColor: '#E5E7EB', paddingTop: insets.top + 16 }]}>
+      <View style={[styles.header, { backgroundColor: colors.cardBackground, borderBottomColor: colors.inputBorder, paddingTop: insets.top + 16 }]}>
         <TouchableOpacity onPress={() => router.back()} style={[styles.backButton, { backgroundColor: '#F3F4F6' }]}>
           <IconSymbol size={20} name="chevron.left" color={colors.text} />
         </TouchableOpacity>
@@ -317,19 +317,19 @@ export default function CreateReceiptScreen() {
         keyboardShouldPersistTaps="handled"
       >
         {/* Customer Information */}
-        <View style={styles.inputSection}>
+        <View style={[styles.inputSection, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>Customer Information</Text>
           <TextInput
-            style={[styles.input, { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', color: colors.text }]}
+            style={[styles.input, { backgroundColor: colors.inputBackground, borderColor: colors.inputBorder, color: colors.text }]}
             placeholder="Customer Name *"
-            placeholderTextColor="#9CA3AF"
+            placeholderTextColor={colors.tabIconDefault}
             value={customerName}
             onChangeText={setCustomerName}
           />
           <TextInput
-            style={[styles.input, { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', color: colors.text, marginTop: 12 }]}
+            style={[styles.input, { backgroundColor: colors.inputBackground, borderColor: colors.inputBorder, color: colors.text, marginTop: 12 }]}
             placeholder="Customer Phone (Optional)"
-            placeholderTextColor="#9CA3AF"
+            placeholderTextColor={colors.tabIconDefault}
             keyboardType="phone-pad"
             value={customerPhone}
             onChangeText={setCustomerPhone}
@@ -337,7 +337,7 @@ export default function CreateReceiptScreen() {
         </View>
 
         {/* Item Input Section */}
-        <View style={styles.inputSection}>
+        <View style={[styles.inputSection, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}>
           <View style={styles.sectionHeader}>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>Add Items</Text>
             <TouchableOpacity
@@ -352,14 +352,14 @@ export default function CreateReceiptScreen() {
           <View style={styles.inputGroup}>
             <View style={styles.inventorySearchContainer}>
               <TextInput
-                style={[styles.input, styles.inventorySearchInput, { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', color: colors.text }]}
+                style={[styles.input, styles.inventorySearchInput, { backgroundColor: colors.inputBackground, borderColor: colors.inputBorder, color: colors.text }]}
                 placeholder="Search inventory (type 2+ letters)..."
-                placeholderTextColor="#9CA3AF"
+                placeholderTextColor={colors.tabIconDefault}
                 value={inventorySearch}
                 onChangeText={setInventorySearch}
               />
               {showInventoryDropdown && filteredInventory.length > 0 && (
-                <View style={[styles.inventoryDropdown, { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB' }]}>
+                <View style={[styles.inventoryDropdown, { backgroundColor: colors.cardBackground, borderColor: colors.inputBorder }]}>
                   {filteredInventory.map((item) => (
                     <TouchableOpacity
                       key={item.id?.toString() || ''}
@@ -379,9 +379,9 @@ export default function CreateReceiptScreen() {
               )}
             </View>
             <TextInput
-              style={[styles.input, { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', color: colors.text }]}
+              style={[styles.input, { backgroundColor: colors.inputBackground, borderColor: colors.inputBorder, color: colors.text }]}
               placeholder="Item description"
-              placeholderTextColor="#9CA3AF"
+              placeholderTextColor={colors.tabIconDefault}
               value={description}
               onChangeText={(text) => {
                 setDescription(text);
@@ -391,17 +391,17 @@ export default function CreateReceiptScreen() {
 
             <View style={styles.rowInputs}>
               <TextInput
-                style={[styles.input, styles.halfInput, { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', color: colors.text }]}
+                style={[styles.input, styles.halfInput, { backgroundColor: colors.inputBackground, borderColor: colors.inputBorder, color: colors.text }]}
                 placeholder="Quantity"
-                placeholderTextColor="#9CA3AF"
+                placeholderTextColor={colors.tabIconDefault}
                 keyboardType="numeric"
                 value={quantity}
                 onChangeText={setQuantity}
               />
               <TextInput
-                style={[styles.input, styles.halfInput, { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', color: colors.text }]}
+                style={[styles.input, styles.halfInput, { backgroundColor: colors.inputBackground, borderColor: colors.inputBorder, color: colors.text }]}
                 placeholder="Rate"
-                placeholderTextColor="#9CA3AF"
+                placeholderTextColor={colors.tabIconDefault}
                 keyboardType="decimal-pad"
                 value={price}
                 onChangeText={setPrice}
@@ -484,21 +484,21 @@ export default function CreateReceiptScreen() {
 
         {/* Total Summary */}
         {items.length > 0 && (
-          <View style={styles.totalSection}>
+          <View style={[styles.totalSection, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}>
             <View style={styles.totalRow}>
               <Text style={[styles.totalLabel, { color: colors.text }]}>Subtotal:</Text>
               <Text style={[styles.totalValue, { color: colors.text }]}>{formatCurrency(total)}</Text>
             </View>
-            <View style={[styles.totalRow, styles.totalRowFinal]}>
+            <View style={[styles.totalRow, styles.totalRowFinal, { borderTopColor: colors.inputBorder }]}>
               <Text style={[styles.totalLabelFinal, { color: colors.text }]}>Total:</Text>
-              <Text style={[styles.totalValueFinal, { color: '#2563EB' }]}>{formatCurrency(total)}</Text>
+              <Text style={[styles.totalValueFinal, { color: colors.tint }]}>{formatCurrency(total)}</Text>
             </View>
           </View>
         )}
       </ScrollView>
 
       {/* Action Buttons */}
-      <View style={[styles.footer, { backgroundColor: '#FFFFFF', borderTopColor: '#E5E7EB' }]}>
+      <View style={[styles.footer, { backgroundColor: colors.cardBackground, borderTopColor: colors.inputBorder, paddingBottom: insets.bottom + 24 }]}>
         <TouchableOpacity
           style={[
             styles.generateButton,
@@ -516,7 +516,7 @@ export default function CreateReceiptScreen() {
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.cancelButton, { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB' }]}
+          style={[styles.cancelButton, { backgroundColor: colors.cardBackground, borderColor: colors.inputBorder }]}
           onPress={() => router.back()}
           activeOpacity={0.7}
         >
@@ -567,7 +567,6 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   inputSection: {
-    backgroundColor: '#FFFFFF',
     padding: 20,
     borderRadius: 16,
     marginBottom: 20,
@@ -577,7 +576,6 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 2,
     borderWidth: 1,
-    borderColor: '#F3F4F6',
   },
   sectionTitle: {
     fontSize: 18,
@@ -593,7 +591,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     fontSize: 16,
-    backgroundColor: '#FFFFFF',
   },
   rowInputs: {
     flexDirection: 'row',
@@ -638,9 +635,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     padding: 16,
     borderRadius: 12,
-    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#F3F4F6',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
@@ -667,11 +662,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   totalSection: {
-    backgroundColor: '#FFFFFF',
     padding: 20,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#F3F4F6',
     gap: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -685,7 +678,6 @@ const styles = StyleSheet.create({
   },
   totalRowFinal: {
     borderTopWidth: 1.5,
-    borderTopColor: '#E5E7EB',
     paddingTop: 12,
     marginTop: 8,
   },

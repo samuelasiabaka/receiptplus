@@ -1,5 +1,4 @@
 import ReceiptView from '@/components/receipt-view';
-import LoadingView from '@/components/loading-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -115,7 +114,11 @@ export default function ReceiptPreviewScreen() {
   };
 
   if (loading) {
-    return <LoadingView message="Loading receipt..." />;
+    return (
+      <View style={[styles.container, styles.centerContent, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.tint} />
+      </View>
+    );
   }
 
   if (!receipt || !businessProfile) {
@@ -151,7 +154,7 @@ export default function ReceiptPreviewScreen() {
       </ScrollView>
 
       {/* Action Buttons */}
-      <View style={[styles.footer, { borderTopColor: colors.tabIconDefault, backgroundColor: colors.background }]}>
+      <View style={[styles.footer, { borderTopColor: colors.tabIconDefault, backgroundColor: colors.background, paddingBottom: insets.bottom + 16 }]}>
         <TouchableOpacity
           style={[styles.shareButton, { backgroundColor: colors.tint }]}
           onPress={handleShareWhatsApp}

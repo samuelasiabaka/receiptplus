@@ -3,7 +3,7 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { initDb } from '@/lib/database';
-import { deleteReceipt, getAllReceipts, hasSeenHelpGuide, markHelpGuideAsSeen } from '@/lib/storage';
+import { deleteReceipt, getAllReceipts } from '@/lib/storage';
 import type { Receipt } from '@/models/types';
 import { formatCurrency, formatDate } from '@/utils/receipt';
 import { useFocusEffect } from '@react-navigation/native';
@@ -56,7 +56,7 @@ function AnimatedReceiptCard({
       }}
     >
       <TouchableOpacity
-        style={styles.receiptCard}
+        style={[styles.receiptCard, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}
         onPress={onPress}
         activeOpacity={0.7}
       >
@@ -73,8 +73,8 @@ function AnimatedReceiptCard({
             </Text>
           </View>
         </View>
-        <View style={styles.receiptCardFooter}>
-          <View style={[styles.itemsBadge, { backgroundColor: '#F3F4F6' }]}>
+        <View style={[styles.receiptCardFooter, { borderTopColor: colors.inputBorder }]}>
+          <View style={[styles.itemsBadge, { backgroundColor: colors.background }]}>
             <IconSymbol size={14} name="doc.text.fill" color={colors.tabIconDefault} />
             <Text style={[styles.receiptItemsCount, { color: colors.tabIconDefault }]}>
               {receipt.items.length} item{receipt.items.length !== 1 ? 's' : ''}
@@ -127,23 +127,7 @@ export default function HomeScreen() {
 
   useEffect(() => {
     loadReceipts();
-    checkAndShowHelpGuide();
   }, []);
-
-  const checkAndShowHelpGuide = async () => {
-    try {
-      await initDb();
-      const seen = await hasSeenHelpGuide();
-      if (!seen) {
-        // Small delay to let the screen render first
-        setTimeout(() => {
-          router.push('/help-guide' as any);
-        }, 500);
-      }
-    } catch (error) {
-      console.error('Error checking help guide status:', error);
-    }
-  };
 
   // Refresh receipts when screen comes into focus
   useFocusEffect(
@@ -196,19 +180,19 @@ export default function HomeScreen() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
-      <View style={[styles.header, { backgroundColor: '#FFFFFF', paddingTop: insets.top + 16, borderBottomColor: '#E5E7EB' }]}>
+      <View style={[styles.header, { backgroundColor: colors.cardBackground, paddingTop: insets.top + 16, borderBottomColor: colors.inputBorder }]}>
         <View style={styles.headerContent}>
           <Text style={[styles.title, { color: colors.text }]}>My Receipts</Text>
           <View style={styles.headerButtons}>
             <TouchableOpacity 
               onPress={handleOpenInventory} 
-              style={[styles.headerButton, { backgroundColor: '#F3F4F6' }]}
+              style={[styles.headerButton, { backgroundColor: colors.background }]}
             >
               <IconSymbol size={20} name="cube.box.fill" color={colors.tint} />
             </TouchableOpacity>
             <TouchableOpacity 
               onPress={handleOpenSettings} 
-              style={[styles.headerButton, { backgroundColor: '#F3F4F6' }]}
+              style={[styles.headerButton, { backgroundColor: colors.background }]}
             >
               <IconSymbol size={20} name="gearshape.fill" color={colors.tint} />
             </TouchableOpacity>
@@ -226,7 +210,7 @@ export default function HomeScreen() {
           <LoadingView message="Loading receipts..." />
         ) : receipts.length === 0 ? (
           <View style={styles.emptyContainer}>
-            <View style={styles.emptyIconContainer}>
+            <View style={[styles.emptyIconContainer, { backgroundColor: colors.background }]}>
               <Text style={styles.emptyEmoji}>📋</Text>
             </View>
             <Text style={[styles.emptyTitle, { color: colors.text }]}>No receipts yet</Text>
@@ -253,7 +237,7 @@ export default function HomeScreen() {
       </ScrollView>
 
       {/* Bottom Action Button */}
-      <View style={[styles.footer, { backgroundColor: '#FFFFFF', borderTopColor: '#E5E7EB' }]}>
+      <View style={[styles.footer, { backgroundColor: colors.cardBackground, borderTopColor: colors.inputBorder, paddingBottom: insets.bottom + 24 }]}>
         <TouchableOpacity
           style={styles.createButton}
           onPress={handleCreateReceipt}
@@ -321,7 +305,6 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: '#F3F4F6',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 24,
@@ -345,7 +328,6 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   receiptCard: {
-    backgroundColor: '#FFFFFF',
     padding: 20,
     borderRadius: 16,
     marginBottom: 4,
@@ -355,7 +337,6 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 3,
     borderWidth: 1,
-    borderColor: '#F3F4F6',
   },
   receiptCardHeader: {
     flexDirection: 'row',
@@ -395,7 +376,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 16,
     borderTopWidth: 1,
-    borderTopColor: '#F3F4F6',
   },
   itemsBadge: {
     flexDirection: 'row',
