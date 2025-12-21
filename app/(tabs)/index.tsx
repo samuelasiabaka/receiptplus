@@ -3,7 +3,7 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { initDb } from '@/lib/database';
-import { deleteReceipt, getAllReceipts } from '@/lib/storage';
+import { deleteReceipt, getAllReceipts, hasSeenHelpGuide, markHelpGuideAsSeen } from '@/lib/storage';
 import type { Receipt } from '@/models/types';
 import { formatCurrency, formatDate } from '@/utils/receipt';
 import { useFocusEffect } from '@react-navigation/native';
@@ -127,7 +127,23 @@ export default function HomeScreen() {
 
   useEffect(() => {
     loadReceipts();
+    checkAndShowHelpGuide();
   }, []);
+
+  const checkAndShowHelpGuide = async () => {
+    try {
+      await initDb();
+      const seen = await hasSeenHelpGuide();
+      if (!seen) {
+        // Small delay to let the screen render first
+        setTimeout(() => {
+          router.push('/help-guide' as any);
+        }, 500);
+      }
+    } catch (error) {
+      console.error('Error checking help guide status:', error);
+    }
+  };
 
   // Refresh receipts when screen comes into focus
   useFocusEffect(

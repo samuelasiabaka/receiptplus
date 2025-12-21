@@ -30,6 +30,9 @@ const MAPPING = {
   'magnifyingglass': 'search',
   'xmark.circle.fill': 'cancel',
   'xmark': 'close',
+  'questionmark.circle.fill': 'help',
+  'doc.text.magnifyingglass': 'description',
+  'checkmark.circle.fill': 'check-circle',
 } as IconMapping;
 
 /**

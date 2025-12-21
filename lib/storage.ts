@@ -548,3 +548,55 @@ export const deleteInventoryItem = (id: number): Promise<void> => {
     }
   })();
 };
+
+// App settings operations
+export const getAppSetting = async (key: string): Promise<string | null> => {
+  if (isWeb) {
+    return null;
+  }
+  
+  try {
+    const db = getDb();
+    const stmt = await db.prepareAsync('SELECT value FROM app_settings WHERE key = ?');
+    const result = await stmt.executeAsync<{ value: string }>([key]);
+    
+    let value: string | null = null;
+    for await (const row of result) {
+      value = row.value;
+      break;
+    }
+    
+    await stmt.finalizeAsync();
+    return value;
+  } catch (error) {
+    console.error('Error getting app setting:', error);
+    return null;
+  }
+};
+
+export const setAppSetting = async (key: string, value: string): Promise<void> => {
+  if (isWeb) {
+    return;
+  }
+  
+  try {
+    const db = getDb();
+    const stmt = await db.prepareAsync(
+      'INSERT OR REPLACE INTO app_settings (key, value) VALUES (?, ?)'
+    );
+    await stmt.executeAsync([key, value]);
+    await stmt.finalizeAsync();
+  } catch (error) {
+    console.error('Error setting app setting:', error);
+  }
+};
+
+// Help guide utilities
+export const hasSeenHelpGuide = async (): Promise<boolean> => {
+  const value = await getAppSetting('hasSeenHelpGuide');
+  return value === 'true';
+};
+
+export const markHelpGuideAsSeen = async (): Promise<void> => {
+  await setAppSetting('hasSeenHelpGuide', 'true');
+};

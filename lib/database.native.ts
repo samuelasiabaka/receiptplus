@@ -53,6 +53,11 @@ export const initDb = async () => {
       price REAL NOT NULL,
       createdAt TEXT NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS app_settings (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL
+    );
   `);
 
   // Migrate existing database: Add new columns if they don't exist

@@ -254,6 +254,27 @@ export default function BusinessProfileScreen() {
             This text will appear at the bottom of your receipts. Leave empty to use default message.
           </Text>
         </View>
+
+        {/* Help Guide Section */}
+        <View style={styles.section}>
+          <Text style={[styles.label, { color: colors.text }]}>Help & Support</Text>
+          <TouchableOpacity
+            style={[styles.helpButton, { backgroundColor: '#F3F4F6', borderColor: '#E5E7EB' }]}
+            onPress={() => router.push('/help-guide' as any)}
+            activeOpacity={0.7}
+          >
+            <View style={styles.helpButtonContent}>
+              <IconSymbol size={24} name="questionmark.circle.fill" color={colors.tint} />
+              <View style={styles.helpButtonTextContainer}>
+                <Text style={[styles.helpButtonTitle, { color: colors.text }]}>View Help Guide</Text>
+                <Text style={[styles.helpButtonSubtitle, { color: colors.tabIconDefault }]}>
+                  Learn how to use the app
+                </Text>
+              </View>
+              <IconSymbol size={20} name="chevron.right" color={colors.tabIconDefault} />
+            </View>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
 
       {/* Action Buttons */}
@@ -439,6 +460,30 @@ const styles = StyleSheet.create({
     fontSize: 13,
     marginTop: 8,
     lineHeight: 18,
+    color: '#6B7280',
+  },
+  helpButton: {
+    borderWidth: 1.5,
+    borderRadius: 12,
+    padding: 16,
+    backgroundColor: '#FFFFFF',
+  },
+  helpButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  helpButtonTextContainer: {
+    flex: 1,
+  },
+  helpButtonTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 4,
+    letterSpacing: -0.2,
+  },
+  helpButtonSubtitle: {
+    fontSize: 13,
     color: '#6B7280',
   },
 });

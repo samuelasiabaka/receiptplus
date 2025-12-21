@@ -44,6 +44,15 @@
             "backgroundColor": "#000000"
           }
         }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "enableProguardInReleaseBuilds": true,
+            "enableShrinkResourcesInReleaseBuilds": true
+          }
+        }
       ]
     ],
     "experiments": {
@@ -55,6 +64,12 @@
       "eas": {
         "projectId": "a438513b-93a9-414d-bff0-982131b01f85"
       }
+    },
+    "updates": {
+      "url": "https://u.expo.dev/a438513b-93a9-414d-bff0-982131b01f85"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
     }
   }
 }
