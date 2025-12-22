@@ -301,7 +301,7 @@ export default function CreateReceiptScreen() {
     >
       {/* Header */}
       <View style={[styles.header, { backgroundColor: colors.cardBackground, borderBottomColor: colors.inputBorder, paddingTop: insets.top + 16 }]}>
-        <TouchableOpacity onPress={() => router.back()} style={[styles.backButton, { backgroundColor: '#F3F4F6' }]}>
+        <TouchableOpacity onPress={() => router.back()} style={[styles.backButton, { backgroundColor: colors.background }]}>
           <IconSymbol size={20} name="chevron.left" color={colors.text} />
         </TouchableOpacity>
         <Text style={[styles.title, { color: colors.text }]}>

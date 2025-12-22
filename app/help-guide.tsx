@@ -160,7 +160,7 @@ export default function HelpGuideScreen({ onComplete, showSkip = true }: { onCom
               <Text style={[styles.skipButtonText, { color: colors.tabIconDefault }]}>Skip</Text>
             </TouchableOpacity>
           ) : (
-            <TouchableOpacity onPress={() => router.back()} style={[styles.backButton, { backgroundColor: '#F3F4F6' }]}>
+            <TouchableOpacity onPress={() => router.back()} style={[styles.backButton, { backgroundColor: colors.background }]}>
               <IconSymbol size={24} name="chevron.left" color={colors.text} />
             </TouchableOpacity>
           )}

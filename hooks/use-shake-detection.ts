@@ -1,6 +1,6 @@
-import { useEffect } from 'react';
+import { useRouter, useSegments } from 'expo-router';
 import { Accelerometer } from 'expo-sensors';
-import { useRouter } from 'expo-router';
+import { useEffect } from 'react';
 
 const SHAKE_THRESHOLD = 1.5;
 const SHAKE_TIMEOUT = 1000;
@@ -12,6 +12,7 @@ let lastZ = 0;
 
 export function useShakeDetection() {
   const router = useRouter();
+  const segments = useSegments();
 
   useEffect(() => {
     let subscription: { remove: () => void } | null = null;
@@ -30,8 +31,17 @@ export function useShakeDetection() {
         // Prevent multiple shakes within timeout period
         if (currentTime - lastShakeTime > SHAKE_TIMEOUT) {
           lastShakeTime = currentTime;
-          // Navigate to help guide
-          router.push('/help-guide' as any);
+          
+          // Check if help guide is already open
+          const isHelpGuideOpen = segments.some(segment => segment === 'help-guide');
+          
+          if (isHelpGuideOpen) {
+            // Close help guide if already open
+            router.back();
+          } else {
+            // Open help guide if not open
+            router.push('/help-guide' as any);
+          }
         }
       }
 
@@ -49,6 +59,6 @@ export function useShakeDetection() {
         subscription.remove();
       }
     };
-  }, [router]);
+  }, [router, segments]);
 }
 

@@ -274,7 +274,7 @@ export default function OnboardingScreen() {
               returnKeyType="next"
             />
             <TextInput
-              style={[styles.input, { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', color: colors.text, marginTop: 12 }]}
+              style={[styles.input, { backgroundColor: colors.inputBackground, borderColor: colors.inputBorder, color: colors.text, marginTop: 12 }]}
               placeholder="CAC Number (Optional)"
               placeholderTextColor={colors.tabIconDefault}
               value={cacNumber}
@@ -282,7 +282,7 @@ export default function OnboardingScreen() {
               returnKeyType="next"
             />
             <TextInput
-              style={[styles.input, { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', color: colors.text, marginTop: 12 }]}
+              style={[styles.input, { backgroundColor: colors.inputBackground, borderColor: colors.inputBorder, color: colors.text, marginTop: 12 }]}
               placeholder="Website (Optional)"
               placeholderTextColor={colors.tabIconDefault}
               keyboardType="url"
@@ -306,7 +306,7 @@ export default function OnboardingScreen() {
               Add a custom message that will appear at the bottom of your receipts. Leave empty to use the default message.
             </Text>
             <TextInput
-              style={[styles.input, styles.textArea, { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', color: colors.text }]}
+              style={[styles.input, styles.textArea, { backgroundColor: colors.inputBackground, borderColor: colors.inputBorder, color: colors.text }]}
               placeholder="Thank you for your patronage!"
               placeholderTextColor={colors.tabIconDefault}
               value={customFooter}

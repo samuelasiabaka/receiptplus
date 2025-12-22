@@ -128,7 +128,7 @@ export default function BusinessProfileScreen() {
     >
       {/* Header */}
       <View style={[styles.header, { backgroundColor: colors.cardBackground, borderBottomColor: colors.inputBorder, paddingTop: insets.top + 16 }]}>
-        <TouchableOpacity onPress={() => router.back()} style={[styles.backButton, { backgroundColor: '#F3F4F6' }]}>
+        <TouchableOpacity onPress={() => router.back()} style={[styles.backButton, { backgroundColor: colors.background }]}>
           <IconSymbol size={20} name="chevron.left" color={colors.text} />
         </TouchableOpacity>
         <Text style={[styles.title, { color: colors.text }]}>Business Profile</Text>
@@ -188,7 +188,7 @@ export default function BusinessProfileScreen() {
         <View style={[styles.section, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}>
           <Text style={[styles.label, { color: colors.text }]}>Phone Number *</Text>
           <TextInput
-            style={[styles.input, { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', color: colors.text }]}
+            style={[styles.input, { backgroundColor: colors.inputBackground, borderColor: colors.inputBorder, color: colors.text }]}
             placeholder="08012345678"
             placeholderTextColor={colors.tabIconDefault}
             keyboardType="phone-pad"
@@ -201,7 +201,7 @@ export default function BusinessProfileScreen() {
         <View style={[styles.section, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}>
           <Text style={[styles.label, { color: colors.text }]}>Address (Optional)</Text>
           <TextInput
-            style={[styles.input, { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', color: colors.text }]}
+            style={[styles.input, { backgroundColor: colors.inputBackground, borderColor: colors.inputBorder, color: colors.text }]}
             placeholder="123 Main Street"
             placeholderTextColor={colors.tabIconDefault}
             value={address}
@@ -215,7 +215,7 @@ export default function BusinessProfileScreen() {
         <View style={[styles.section, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}>
           <Text style={[styles.label, { color: colors.text }]}>CAC Number (Optional)</Text>
           <TextInput
-            style={[styles.input, { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', color: colors.text }]}
+            style={[styles.input, { backgroundColor: colors.inputBackground, borderColor: colors.inputBorder, color: colors.text }]}
             placeholder="RC12345"
             placeholderTextColor={colors.tabIconDefault}
             value={cacNumber}
@@ -227,7 +227,7 @@ export default function BusinessProfileScreen() {
         <View style={[styles.section, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}>
           <Text style={[styles.label, { color: colors.text }]}>Website (Optional)</Text>
           <TextInput
-            style={[styles.input, { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', color: colors.text }]}
+            style={[styles.input, { backgroundColor: colors.inputBackground, borderColor: colors.inputBorder, color: colors.text }]}
             placeholder="https://example.com"
             placeholderTextColor={colors.tabIconDefault}
             keyboardType="url"
@@ -241,7 +241,7 @@ export default function BusinessProfileScreen() {
         <View style={[styles.section, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}>
           <Text style={[styles.label, { color: colors.text }]}>Custom Receipt Footer (Optional)</Text>
           <TextInput
-            style={[styles.textArea, { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', color: colors.text }]}
+            style={[styles.textArea, { backgroundColor: colors.inputBackground, borderColor: colors.inputBorder, color: colors.text }]}
             placeholder="Thank you for your patronage!"
             placeholderTextColor={colors.tabIconDefault}
             value={customFooter}
