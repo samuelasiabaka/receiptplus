@@ -10,9 +10,21 @@ export default function Index() {
 
   useEffect(() => {
     const checkAndRedirect = async () => {
+      const startTime = Date.now();
+      const MIN_LOADING_TIME = 1500; // Minimum 1.5 seconds to allow icons to load
+      
       try {
         await initDb();
         const profile = await getBusinessProfile();
+        
+        // Calculate remaining time to meet minimum loading duration
+        const elapsed = Date.now() - startTime;
+        const remaining = Math.max(0, MIN_LOADING_TIME - elapsed);
+        
+        // Wait for remaining time if needed
+        if (remaining > 0) {
+          await new Promise(resolve => setTimeout(resolve, remaining));
+        }
         
         if (profile) {
           // Profile exists, go to home

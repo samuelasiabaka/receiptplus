@@ -33,6 +33,7 @@ const MAPPING = {
   'questionmark.circle.fill': 'help',
   'doc.text.magnifyingglass': 'description',
   'checkmark.circle.fill': 'check-circle',
+  'slider.horizontal.3': 'tune',
 } as IconMapping;
 
 /**

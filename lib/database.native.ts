@@ -115,6 +115,16 @@ export const initDb = async () => {
         }
       }
     }
+    if (!receiptsColumns.has('amountPaid')) {
+      try {
+        await db.execAsync('ALTER TABLE receipts ADD COLUMN amountPaid REAL');
+      } catch (err: any) {
+        // Ignore duplicate column errors
+        if (!err?.message?.includes('duplicate column')) {
+          console.log('Error adding amountPaid column:', err);
+        }
+      }
+    }
 
     // Migrate business_profile table
     try {

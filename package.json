@@ -9,8 +9,8 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "lint": "expo lint",
-    "build:android": "eas build --platform android --profile preview",
-    "build:android:prod": "eas build --platform android --profile production",
+    "build:android": "eas build --platform android --profile production",
+    "build:android:preview": "eas build --platform android --profile preview",
     "update": "eas update --branch production",
     "update:preview": "eas update --branch preview"
   },

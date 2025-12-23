@@ -31,21 +31,41 @@ export default function RootLayout() {
 
     const checkForUpdates = async () => {
       try {
+        // Only check for updates if Updates is available and enabled
+        if (!Updates.isEnabled) {
+          console.log('Updates are not enabled');
+          return;
+        }
+
         const update = await Updates.checkForUpdateAsync();
         
         if (update.isAvailable) {
-          // Download the update in the background
-          await Updates.fetchUpdateAsync();
-          // Reload the app to apply the update
-          await Updates.reloadAsync();
+          console.log('Update available, downloading...');
+          // Download the update
+          const result = await Updates.fetchUpdateAsync();
+          
+          if (result.isNew) {
+            console.log('New update downloaded, reloading app...');
+            // Reload the app to apply the update
+            await Updates.reloadAsync();
+          } else {
+            console.log('Update already downloaded');
+          }
+        } else {
+          console.log('No updates available');
         }
       } catch (error) {
-        // Silently fail - don't interrupt user experience
-        console.log('Update check failed:', error);
+        // Log error but don't interrupt user experience
+        console.error('Update check failed:', error);
       }
     };
 
-    checkForUpdates();
+    // Check for updates after a short delay to not block app startup
+    const timeoutId = setTimeout(() => {
+      checkForUpdates();
+    }, 1000);
+
+    return () => clearTimeout(timeoutId);
   }, []);
 
   return (

@@ -8,8 +8,9 @@ export const generateReceiptNumber = (businessName: string): string => {
     .toUpperCase()
     .padEnd(3, 'X'); // Pad with X if less than 3 characters
   
-  const timestamp = Date.now();
-  const random = Math.floor(Math.random() * 1000);
+  // Use shorter timestamp (last 10 digits) and shorter random (2 digits)
+  const timestamp = Date.now().toString().slice(-10);
+  const random = Math.floor(Math.random() * 100).toString().padStart(2, '0');
   return `${prefix}-${timestamp}-${random}`;
 };
 
@@ -19,6 +20,14 @@ export const formatCurrency = (amount: number): string => {
     return `₦${amount.toLocaleString()}`;
   }
   return `₦${amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+};
+
+export const formatNumber = (amount: number): string => {
+  // Format number without currency symbol
+  if (amount % 1 === 0) {
+    return amount.toLocaleString();
+  }
+  return amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 };
 
 export const formatDate = (dateString: string): string => {

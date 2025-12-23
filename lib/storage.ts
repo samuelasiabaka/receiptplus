@@ -18,7 +18,7 @@ export const saveReceipt = (
 
     // Insert receipt
     const insertReceiptStmt = await db.prepareAsync(
-      'INSERT INTO receipts (receiptNumber, total, createdAt, paymentStatus, customerName, customerPhone, notes) VALUES (?, ?, ?, ?, ?, ?, ?)'
+      'INSERT INTO receipts (receiptNumber, total, createdAt, paymentStatus, amountPaid, customerName, customerPhone, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
     );
 
     try {
@@ -27,6 +27,7 @@ export const saveReceipt = (
         receipt.total,
         receipt.createdAt,
         receipt.paymentStatus || null,
+        receipt.amountPaid || null,
         receipt.customerName || null,
         receipt.customerPhone || null,
         receipt.notes || null,
@@ -76,6 +77,7 @@ export const getAllReceipts = (): Promise<Receipt[]> => {
       total: number;
       createdAt: string;
       paymentStatus?: string;
+      amountPaid?: number;
       customerName?: string;
       customerPhone?: string;
       notes?: string;
@@ -92,6 +94,7 @@ export const getAllReceipts = (): Promise<Receipt[]> => {
           total: row.total,
           createdAt: row.createdAt,
           paymentStatus: row.paymentStatus as any,
+          amountPaid: row.amountPaid,
           customerName: row.customerName || '',
           customerPhone: row.customerPhone,
           notes: row.notes,
@@ -153,6 +156,7 @@ export const getReceiptById = (id: number): Promise<Receipt | null> => {
       total: number;
       createdAt: string;
       paymentStatus?: string;
+      amountPaid?: number;
       customerName?: string;
       customerPhone?: string;
       notes?: string;
@@ -197,6 +201,7 @@ export const getReceiptById = (id: number): Promise<Receipt | null> => {
           total: base.total,
           createdAt: base.createdAt,
           paymentStatus: base.paymentStatus as any,
+          amountPaid: base.amountPaid,
           customerName: base.customerName || '',
           customerPhone: base.customerPhone,
           notes: base.notes,
@@ -225,7 +230,7 @@ export const updateReceipt = (
 
     // Update receipt
     const updateReceiptStmt = await db.prepareAsync(
-      'UPDATE receipts SET receiptNumber = ?, total = ?, paymentStatus = ?, customerName = ?, customerPhone = ?, notes = ? WHERE id = ?'
+      'UPDATE receipts SET receiptNumber = ?, total = ?, paymentStatus = ?, amountPaid = ?, customerName = ?, customerPhone = ?, notes = ? WHERE id = ?'
     );
 
     try {
@@ -233,6 +238,7 @@ export const updateReceipt = (
         receipt.receiptNumber,
         receipt.total,
         receipt.paymentStatus || null,
+        receipt.amountPaid || null,
         receipt.customerName || null,
         receipt.customerPhone || null,
         receipt.notes || null,

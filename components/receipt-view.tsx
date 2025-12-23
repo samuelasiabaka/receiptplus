@@ -1,6 +1,6 @@
 import type { BusinessProfile, Receipt } from '@/models/types';
-import { formatCurrency, formatDate } from '@/utils/receipt';
-import React from 'react';
+import { formatCurrency, formatDate, formatNumber } from '@/utils/receipt';
+import React, { useState } from 'react';
 import { Image, StyleSheet, Text, View } from 'react-native';
 
 interface ReceiptViewProps {
@@ -8,18 +8,56 @@ interface ReceiptViewProps {
   businessProfile: BusinessProfile;
 }
 
+// Logo component that handles errors gracefully
+function LogoImage({ logoUri }: { logoUri: string }) {
+  const [hasError, setHasError] = useState(false);
+  
+  if (hasError) {
+    return <Text style={styles.receiptTitle}>RECEIPT</Text>;
+  }
+  
+  return (
+    <Image 
+      source={{ uri: logoUri }} 
+      style={styles.logo} 
+      resizeMode="contain"
+      onError={() => {
+        // Silently handle error - don't log it
+        setHasError(true);
+      }}
+    />
+  );
+}
+
+// Watermark logo component that handles errors gracefully
+function WatermarkLogo({ logoUri }: { logoUri: string }) {
+  const [hasError, setHasError] = useState(false);
+  
+  if (hasError) {
+    return null; // Don't show watermark if logo fails to load
+  }
+  
+  return (
+    <View style={styles.watermarkContainer}>
+      <Image
+        source={{ uri: logoUri }}
+        style={styles.watermarkLogo}
+        resizeMode="contain"
+        onError={() => {
+          // Silently handle error - don't log it
+          setHasError(true);
+        }}
+      />
+    </View>
+  );
+}
+
 export default function ReceiptView({ receipt, businessProfile }: ReceiptViewProps) {
   return (
     <View style={styles.container}>
       {/* Watermark Logo Background */}
       {businessProfile.logoUri && (
-        <View style={styles.watermarkContainer}>
-          <Image
-            source={{ uri: businessProfile.logoUri }}
-            style={styles.watermarkLogo}
-            resizeMode="contain"
-          />
-        </View>
+        <WatermarkLogo logoUri={businessProfile.logoUri} />
       )}
       
       {/* Header Section */}
@@ -37,7 +75,7 @@ export default function ReceiptView({ receipt, businessProfile }: ReceiptViewPro
         </View>
         <View style={styles.headerRight}>
           {businessProfile.logoUri ? (
-            <Image source={{ uri: businessProfile.logoUri }} style={styles.logo} resizeMode="contain" />
+            <LogoImage logoUri={businessProfile.logoUri} />
           ) : (
             <Text style={styles.receiptTitle}>RECEIPT</Text>
           )}
@@ -56,8 +94,13 @@ export default function ReceiptView({ receipt, businessProfile }: ReceiptViewPro
           </View>
         </View>
         <View style={styles.receiptDetailsRight}>
-          <Text style={styles.receiptNumber}>Receipt #: {receipt.receiptNumber}</Text>
-          <Text style={styles.receiptDate}>Date: {formatDate(receipt.createdAt)}</Text>
+          <Text style={styles.receiptNumber} numberOfLines={1} ellipsizeMode="tail">Receipt #: {receipt.receiptNumber}</Text>
+          <Text style={styles.receiptDate} numberOfLines={1} ellipsizeMode="tail">Date: {formatDate(receipt.createdAt)}</Text>
+          {receipt.paymentStatus === 'paid' && (
+            <View style={styles.paidBadge}>
+              <Text style={styles.paidBadgeText}>Paid</Text>
+            </View>
+          )}
         </View>
       </View>
 
@@ -77,8 +120,8 @@ export default function ReceiptView({ receipt, businessProfile }: ReceiptViewPro
               {item.quantity % 1 === 0 ? item.quantity.toString() : item.quantity.toFixed(2)}
             </Text>
             <Text style={[styles.tableCell, styles.colDescription]} numberOfLines={2} ellipsizeMode="tail">{item.description}</Text>
-            <Text style={[styles.tableCell, styles.colUnitPrice]}>{formatCurrency(item.price)}</Text>
-            <Text style={[styles.tableCell, styles.colAmount]}>{formatCurrency(item.quantity * item.price)}</Text>
+            <Text style={[styles.tableCell, styles.colUnitPrice]}>{formatNumber(item.price)}</Text>
+            <Text style={[styles.tableCell, styles.colAmount]}>{formatNumber(item.quantity * item.price)}</Text>
           </View>
         ))}
       </View>
@@ -93,6 +136,20 @@ export default function ReceiptView({ receipt, businessProfile }: ReceiptViewPro
           <Text style={styles.totalLabel}>Total:</Text>
           <Text style={styles.totalValue}>{formatCurrency(receipt.total)}</Text>
         </View>
+        
+        {/* Payment Information - Show when part payment */}
+        {receipt.paymentStatus === 'part_paid' && receipt.amountPaid !== undefined && (
+          <>
+            <View style={styles.summaryRow}>
+              <Text style={styles.summaryLabel}>Paid:</Text>
+              <Text style={styles.summaryValue}>{formatCurrency(receipt.amountPaid)}</Text>
+            </View>
+            <View style={[styles.summaryRow, styles.balanceRow]}>
+              <Text style={styles.balanceLabel}>Balance:</Text>
+              <Text style={styles.balanceValue}>{formatCurrency(receipt.total - receipt.amountPaid)}</Text>
+            </View>
+          </>
+        )}
       </View>
 
       {/* Notes Section - Temporarily Disabled */}
@@ -223,9 +280,11 @@ const styles = StyleSheet.create({
   },
   receiptDetailsLeft: {
     flex: 1,
+    marginRight: 16,
   },
   receiptDetailsRight: {
     alignItems: 'flex-end',
+    flexShrink: 0,
   },
   billedToSection: {
     marginBottom: 8,
@@ -250,11 +309,26 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#6B7280',
     marginBottom: 4,
+    flexShrink: 1,
   },
   receiptDate: {
     fontSize: 12,
     color: '#6B7280',
-    marginBottom: 8,
+    marginBottom: 4,
+    flexShrink: 1,
+  },
+  paidBadge: {
+    backgroundColor: '#10B981',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+    marginTop: 4,
+    alignSelf: 'flex-end',
+  },
+  paidBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '600',
   },
   tableHeader: {
     flexDirection: 'row',
@@ -339,6 +413,22 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: '#2563EB', // Primary brand color
+  },
+  balanceRow: {
+    marginTop: 8,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#D1D5DB',
+  },
+  balanceLabel: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#111827',
+  },
+  balanceValue: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#EF4444', // Red for outstanding balance
   },
   notesSection: {
     marginTop: 16,

@@ -33,9 +33,19 @@ This will create the `eas.json` file (already created for you).
 
 ### 4. Build APK
 
-**For Testing (Preview Build):**
+**For Production (Default - Recommended):**
 ```bash
 npm run build:android
+```
+
+Or directly:
+```bash
+eas build --platform android --profile production
+```
+
+**For Preview/Testing:**
+```bash
+npm run build:android:preview
 ```
 
 Or directly:
@@ -43,15 +53,7 @@ Or directly:
 eas build --platform android --profile preview
 ```
 
-**For Production:**
-```bash
-npm run build:android:prod
-```
-
-Or directly:
-```bash
-eas build --platform android --profile production
-```
+**Note:** Production builds use the `production` channel for EAS Updates, which is the default going forward.
 
 ## Build Process
 
@@ -129,8 +131,36 @@ Share these instructions with your testers:
 
 ## Build Profiles Explained
 
-- **preview**: Creates an APK for testing (no Play Store requirements)
-- **production**: Creates a signed APK ready for Play Store (requires keystore)
+- **production**: Creates an AAB (Android App Bundle) ready for Play Store. Uses `production` channel for EAS Updates. **This is now the default.**
+- **preview**: Creates an APK for testing. Uses `preview` channel for EAS Updates.
 
-For testing, use the **preview** profile.
+## Pushing Updates (No Rebuild Needed!)
+
+After making code changes, you can push updates without rebuilding:
+
+**For Production:**
+```bash
+npm run update
+```
+
+Or with a custom message:
+```bash
+npx eas update --branch production --message "Your update message"
+```
+
+**For Preview:**
+```bash
+npm run update:preview
+```
+
+**How Updates Work:**
+- Updates are checked automatically when the app launches
+- Users don't need to reinstall - updates apply automatically
+- Only works with production/preview builds (not development builds)
+- Updates are downloaded and applied in the background
+- The app will reload to apply the update
+
+**Important:** Make sure your build and update use the same channel:
+- Production builds → `npm run update` (production channel)
+- Preview builds → `npm run update:preview` (preview channel)
 

@@ -182,7 +182,7 @@ export default function HomeScreen() {
       {/* Header */}
       <View style={[styles.header, { backgroundColor: colors.cardBackground, paddingTop: insets.top + 16, borderBottomColor: colors.inputBorder }]}>
         <View style={styles.headerContent}>
-          <Text style={[styles.title, { color: colors.text }]}>My Receipts</Text>
+        <Text style={[styles.title, { color: colors.text }]}>My Receipts</Text>
           <View style={styles.headerButtons}>
             <TouchableOpacity 
               onPress={handleOpenInventory} 
@@ -195,7 +195,7 @@ export default function HomeScreen() {
               style={[styles.headerButton, { backgroundColor: colors.background }]}
             >
               <IconSymbol size={20} name="gearshape.fill" color={colors.tint} />
-            </TouchableOpacity>
+        </TouchableOpacity>
           </View>
         </View>
       </View>
@@ -211,7 +211,7 @@ export default function HomeScreen() {
         ) : receipts.length === 0 ? (
           <View style={styles.emptyContainer}>
             <View style={[styles.emptyIconContainer, { backgroundColor: colors.background }]}>
-              <Text style={styles.emptyEmoji}>📋</Text>
+            <Text style={styles.emptyEmoji}>📋</Text>
             </View>
             <Text style={[styles.emptyTitle, { color: colors.text }]}>No receipts yet</Text>
             <Text style={[styles.emptySubtitle, { color: colors.tabIconDefault }]}>
@@ -245,7 +245,7 @@ export default function HomeScreen() {
         >
           <View style={styles.createButtonContent}>
             <IconSymbol size={22} name="plus" color="#FFFFFF" />
-            <Text style={styles.createButtonText}>Create Receipt</Text>
+          <Text style={styles.createButtonText}>Create Receipt</Text>
           </View>
         </TouchableOpacity>
       </View>

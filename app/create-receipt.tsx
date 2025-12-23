@@ -99,6 +99,8 @@ export default function CreateReceiptScreen() {
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   const [notes, setNotes] = useState('');
+  const [paymentStatus, setPaymentStatus] = useState<'paid' | 'not_paid' | 'part_paid' | undefined>(undefined);
+  const [amountPaid, setAmountPaid] = useState('');
   
   // Inventory state
   const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
@@ -158,6 +160,8 @@ export default function CreateReceiptScreen() {
             setCustomerName(receipt.customerName || '');
             setCustomerPhone(receipt.customerPhone || '');
             setNotes(receipt.notes || '');
+            setPaymentStatus(receipt.paymentStatus);
+            setAmountPaid(receipt.amountPaid ? receipt.amountPaid.toString() : '');
           }
         }
       } catch (error) {
@@ -205,6 +209,11 @@ export default function CreateReceiptScreen() {
       return;
     }
 
+    if (!paymentStatus) {
+      Alert.alert('Error', 'Please select a payment status (Paid, Not Paid, or Part Payment)');
+      return;
+    }
+
     const validItems = items.filter((item) => item.description.trim() && item.price > 0);
     
     if (validItems.length === 0) {
@@ -234,12 +243,33 @@ export default function CreateReceiptScreen() {
 
       const receiptTotal = validItems.reduce((sum, item) => sum + item.quantity * item.price, 0);
 
+      // Validate amount paid if part payment is selected
+      if (paymentStatus === 'part_paid') {
+        if (!amountPaid || parseFloat(amountPaid) <= 0) {
+          Alert.alert('Error', 'Please enter a valid amount paid for part payment');
+          return;
+        }
+        const paidAmount = parseFloat(amountPaid);
+        if (paidAmount >= receiptTotal) {
+          Alert.alert('Error', 'Amount paid cannot be greater than or equal to total. Please select "Paid" instead.');
+          return;
+        }
+      }
+
       if (editingReceiptId) {
         // Update existing receipt
         const existingReceipt = await getReceiptById(editingReceiptId);
         if (!existingReceipt) {
           Alert.alert('Error', 'Receipt not found');
           return;
+        }
+
+        // Calculate amount paid based on payment status
+        let finalAmountPaid: number | undefined = undefined;
+        if (paymentStatus === 'paid') {
+          finalAmountPaid = receiptTotal;
+        } else if (paymentStatus === 'part_paid' && amountPaid) {
+          finalAmountPaid = parseFloat(amountPaid) || 0;
         }
 
         await updateReceipt(
@@ -249,6 +279,8 @@ export default function CreateReceiptScreen() {
             total: receiptTotal,
             createdAt: existingReceipt.createdAt, // Keep original date
             items: validItems,
+            paymentStatus: paymentStatus,
+            amountPaid: finalAmountPaid,
             customerName: customerName.trim(),
             customerPhone: customerPhone.trim() || undefined,
             notes: notes.trim() || undefined,
@@ -258,6 +290,14 @@ export default function CreateReceiptScreen() {
 
         router.push(`/receipt-preview?id=${editingReceiptId}`);
       } else {
+        // Calculate amount paid based on payment status
+        let finalAmountPaid: number | undefined = undefined;
+        if (paymentStatus === 'paid') {
+          finalAmountPaid = receiptTotal;
+        } else if (paymentStatus === 'part_paid' && amountPaid) {
+          finalAmountPaid = parseFloat(amountPaid) || 0;
+        }
+
         // Create new receipt
         const receiptNumber = generateReceiptNumber(profile.name);
         const receiptId = await saveReceipt(
@@ -266,6 +306,8 @@ export default function CreateReceiptScreen() {
             total: receiptTotal,
             createdAt: new Date().toISOString(),
             items: validItems,
+            paymentStatus: paymentStatus,
+            amountPaid: finalAmountPaid,
             customerName: customerName.trim(),
             customerPhone: customerPhone.trim() || undefined,
             notes: notes.trim() || undefined,
@@ -281,6 +323,8 @@ export default function CreateReceiptScreen() {
         setCustomerName('');
         setCustomerPhone('');
         setNotes('');
+        setPaymentStatus(undefined);
+        setAmountPaid('');
         setInventorySearch('');
         setFilteredInventory([]);
         setShowInventoryDropdown(false);
@@ -442,30 +486,54 @@ export default function CreateReceiptScreen() {
           </View>
         )}
 
-        {/* Payment Status - Temporarily Disabled */}
-        {/* <View style={[styles.inputSection, { backgroundColor: colors.background, borderColor: colors.tabIconDefault }]}>
+        {/* Payment Status */}
+        <View style={[styles.inputSection, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>Payment Status</Text>
           <View style={styles.statusButtons}>
             <TouchableOpacity
-              style={[styles.statusButton, paymentStatus === 'paid' && styles.statusButtonActive, { borderColor: colors.tabIconDefault }]}
-              onPress={() => setPaymentStatus('paid')}
+              style={[styles.statusButton, paymentStatus === 'paid' && styles.statusButtonActive, { borderColor: colors.inputBorder }]}
+              onPress={() => {
+                setPaymentStatus('paid');
+                setAmountPaid(''); // Clear amount paid when switching to paid
+              }}
+              activeOpacity={0.7}
             >
               <Text style={[styles.statusButtonText, { color: paymentStatus === 'paid' ? '#FFFFFF' : colors.text }]}>Paid</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.statusButton, paymentStatus === 'part_paid' && styles.statusButtonActive, { borderColor: colors.tabIconDefault }]}
-              onPress={() => setPaymentStatus('part_paid')}
-            >
-              <Text style={[styles.statusButtonText, { color: paymentStatus === 'part_paid' ? '#FFFFFF' : colors.text }]}>Part Paid</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.statusButton, paymentStatus === 'not_paid' && styles.statusButtonActive, { borderColor: colors.tabIconDefault }]}
-              onPress={() => setPaymentStatus('not_paid')}
+              style={[styles.statusButton, paymentStatus === 'not_paid' && styles.statusButtonActive, { borderColor: colors.inputBorder }]}
+              onPress={() => {
+                setPaymentStatus('not_paid');
+                setAmountPaid(''); // Clear amount paid when switching to not paid
+              }}
+              activeOpacity={0.7}
             >
               <Text style={[styles.statusButtonText, { color: paymentStatus === 'not_paid' ? '#FFFFFF' : colors.text }]}>Not Paid</Text>
             </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.statusButton, paymentStatus === 'part_paid' && styles.statusButtonActive, { borderColor: colors.inputBorder }]}
+              onPress={() => setPaymentStatus('part_paid')}
+              activeOpacity={0.7}
+            >
+              <Text style={[styles.statusButtonText, { color: paymentStatus === 'part_paid' ? '#FFFFFF' : colors.text }]}>Part Payment</Text>
+            </TouchableOpacity>
           </View>
-        </View> */}
+          
+          {/* Amount Paid Input - Show only when Part Payment is selected */}
+          {paymentStatus === 'part_paid' && (
+            <View style={{ marginTop: 16 }}>
+              <Text style={[styles.sectionTitle, { color: colors.text, marginBottom: 8, fontSize: 14 }]}>Amount Paid</Text>
+              <TextInput
+                style={[styles.input, { backgroundColor: colors.inputBackground, borderColor: colors.inputBorder, color: colors.text }]}
+                placeholder="Enter amount paid"
+                placeholderTextColor={colors.tabIconDefault}
+                keyboardType="decimal-pad"
+                value={amountPaid}
+                onChangeText={setAmountPaid}
+              />
+            </View>
+          )}
+        </View>
 
         {/* Notes - Temporarily Disabled */}
         {/* <View style={[styles.inputSection, { backgroundColor: colors.background, borderColor: colors.tabIconDefault }]}>
@@ -760,6 +828,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 44,
   },
   statusButtonActive: {
     backgroundColor: '#2563EB',
@@ -768,6 +838,7 @@ const styles = StyleSheet.create({
   statusButtonText: {
     fontSize: 14,
     fontWeight: '600',
+    textAlign: 'center',
   },
   textArea: {
     borderWidth: 1,

@@ -15,6 +15,7 @@ export interface Receipt {
   createdAt: string;
   items: ReceiptItem[];
   paymentStatus?: PaymentStatus;
+  amountPaid?: number;
   customerName: string;
   customerPhone?: string;
   notes?: string;
