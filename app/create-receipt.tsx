@@ -5,7 +5,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { saveReceipt, updateReceipt, getBusinessProfile, getAllInventoryItems, searchInventoryItems, getReceiptById } from '@/lib/storage';
+import { saveReceipt, updateReceipt, getBusinessProfile, getAllInventoryItems, searchInventoryItems, getReceiptById, getReceiptUsage } from '@/lib/storage';
 import { initDb } from '@/lib/database';
 import type { ReceiptItem, InventoryItem, Receipt } from '@/models/types';
 import { generateReceiptNumber, formatCurrency } from '@/utils/receipt';
@@ -219,6 +219,26 @@ export default function CreateReceiptScreen() {
     if (validItems.length === 0) {
       Alert.alert('Error', 'Please add at least one item with description and price');
       return;
+    }
+
+    // Check receipt usage limit (for free tier)
+    // Note: In Phase 3, this will check subscription status from Supabase
+    try {
+      const usage = await getReceiptUsage();
+      if (usage.count >= usage.limit) {
+        Alert.alert(
+          'Monthly Limit Reached',
+          `You've reached your monthly limit of ${usage.limit} receipts. Upgrade to Premium for unlimited receipts.`,
+          [
+            { text: 'OK', style: 'cancel' },
+            // In Phase 3, add upgrade button here
+          ]
+        );
+        return;
+      }
+    } catch (error) {
+      // If usage tracking fails, allow creation (graceful degradation)
+      console.error('Error checking usage:', error);
     }
 
     try {

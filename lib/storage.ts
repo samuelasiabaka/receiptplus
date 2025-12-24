@@ -55,6 +55,10 @@ export const saveReceipt = (
         }
       }
 
+      // Increment usage counter (tracks creation, not storage)
+      // This persists even if receipt is deleted later
+      await incrementReceiptUsage();
+
       return receiptId;
     } finally {
       await insertReceiptStmt.finalizeAsync();
@@ -276,6 +280,81 @@ export const updateReceipt = (
       }
     }
   })();
+};
+
+// Usage tracking functions
+export const incrementReceiptUsage = async (): Promise<void> => {
+  if (isWeb) {
+    return;
+  }
+  
+  const db = getDb();
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1; // 1-12
+  
+  // Check if record exists for this month
+  const checkStmt = await db.prepareAsync(
+    'SELECT count FROM receipt_usage WHERE year = ? AND month = ?'
+  );
+  
+  try {
+    const result = await checkStmt.executeAsync([year, month]);
+    const iterator = result[Symbol.asyncIterator]();
+    const first = await iterator.next();
+    
+    if (first.done || !first.value) {
+      // First receipt this month - create record
+      const insertStmt = await db.prepareAsync(
+        'INSERT INTO receipt_usage (year, month, count, last_reset_date) VALUES (?, ?, 1, ?)'
+      );
+      await insertStmt.executeAsync([
+        year,
+        month,
+        now.toISOString(),
+      ]);
+      await insertStmt.finalizeAsync();
+    } else {
+      // Increment existing count
+      const updateStmt = await db.prepareAsync(
+        'UPDATE receipt_usage SET count = count + 1 WHERE year = ? AND month = ?'
+      );
+      await updateStmt.executeAsync([year, month]);
+      await updateStmt.finalizeAsync();
+    }
+  } finally {
+    await checkStmt.finalizeAsync();
+  }
+};
+
+export const getReceiptUsage = async (): Promise<{ count: number; limit: number }> => {
+  if (isWeb) {
+    return { count: 0, limit: -1 };
+  }
+  
+  const db = getDb();
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1;
+  
+  const stmt = await db.prepareAsync(
+    'SELECT count FROM receipt_usage WHERE year = ? AND month = ?'
+  );
+  
+  try {
+    const result = await stmt.executeAsync([year, month]);
+    const iterator = result[Symbol.asyncIterator]();
+    const first = await iterator.next();
+    
+    const count = first.done || !first.value ? 0 : (first.value.count as number);
+    
+    return {
+      count,
+      limit: 50, // Free tier limit
+    };
+  } finally {
+    await stmt.finalizeAsync();
+  }
 };
 
 export const deleteReceipt = (id: number): Promise<void> => {

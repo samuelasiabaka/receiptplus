@@ -58,6 +58,15 @@ export const initDb = async () => {
       key TEXT PRIMARY KEY,
       value TEXT NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS receipt_usage (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      year INTEGER NOT NULL,
+      month INTEGER NOT NULL,
+      count INTEGER DEFAULT 0,
+      last_reset_date TEXT NOT NULL,
+      UNIQUE(year, month)
+    );
   `);
 
   // Migrate existing database: Add new columns if they don't exist
